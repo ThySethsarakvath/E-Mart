@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import {
   Body,
@@ -8,8 +12,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { BannersService } from './banners.service';
-import type { Multer } from 'multer';
 
 @Controller('banners')
 export class BannersController {
@@ -21,11 +26,21 @@ export class BannersController {
   }
 
   @Post()
-  @UseInterceptors(FileInterceptor('image'))
-  create(@Body() body: any, @UploadedFile() file: Multer.File) {
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          callback(null, `${uniqueName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  create(@Body() body: any, @UploadedFile() file: any) {
     return this.bannersService.create({
-      ...body,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      title: body.title,
+      subtitle: body.subtitle,
       image: file,
     });
   }
