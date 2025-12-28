@@ -21,12 +21,10 @@
 <template>
   <div class ="home">
     <SearchBar/>
-    <BannerComponent
+   <BannerComponent
   v-for="(banner, index) in productStore.banners"
   :key="index"
-  :title="banner.title"
-  :subtitle="banner.subtitle"
-  :image="`http://localhost:3000/uploads/${banner.imageName}`"
+  :images="[ `http://localhost:3000${banner.imageUrl}` ]"
 />
 
   </div>
