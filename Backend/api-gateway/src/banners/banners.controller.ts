@@ -8,8 +8,12 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
+  Delete,
+  Param,
   UploadedFile,
   UseInterceptors,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -29,7 +33,7 @@ export class BannersController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './uploads',
+        destination: './uploads/banners',
         filename: (req, file, callback) => {
           const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
           callback(null, `${uniqueName}${extname(file.originalname)}`);
@@ -43,5 +47,34 @@ export class BannersController {
       subtitle: body.subtitle,
       image: file,
     });
+  }
+
+  @Patch(':id')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/banners',
+        filename: (req, file, callback) => {
+          const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          callback(null, `${uniqueName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+    @UploadedFile() file?: any,
+  ) {
+    return this.bannersService.update(id, {
+      title: body.title,
+      subtitle: body.subtitle,
+      image: file,
+    });
+  }
+
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.bannersService.remove(id);
   }
 }

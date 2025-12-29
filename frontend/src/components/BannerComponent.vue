@@ -73,7 +73,7 @@ export default {
 <style scoped>
 .banner {
   height: 650px;
-  width: 1750px;
+  width: 1700px;
   margin-top: 40px;
   position: relative;
   overflow: hidden;
@@ -83,7 +83,7 @@ export default {
 
 .banner-img {
   height: 650px;
-  width: 1750px;
+  width: 1700px;
   object-fit: cover;
   position: absolute;
   top: 0;
