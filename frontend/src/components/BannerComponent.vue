@@ -72,8 +72,10 @@ export default {
 
 <style scoped>
 .banner {
-  height: 650px;
-  width: 1700px;
+  aspect-ratio: 16/9;
+  max-width: 1700px;
+  height: auto;
+  width: 100%;
   margin-top: 40px;
   position: relative;
   overflow: hidden;
@@ -82,10 +84,11 @@ export default {
 }
 
 .banner-img {
-  height: 650px;
-  width: 1700px;
+  height: auto;
+  width: 100%;
   object-fit: cover;
   position: absolute;
+  display: block;
   top: 0;
   left: 0;
 }
@@ -142,5 +145,11 @@ export default {
 
 .slide-leave-to {
   transform: translateX(-100%);
+}
+
+@media (max-width:768){
+  .banner {
+    aspect-ratio: 4/3;
+  }
 }
 </style>
