@@ -14,6 +14,11 @@
     },
     async mounted() {
       await this.productStore.fetchBanners();
+    },
+    computed: {
+      allBannerImages() {
+        return this.productStore.banners.map(banner => `http://localhost:3000/uploads/${banner.imagePath}`);
+      }
     }
   }
 </script>
@@ -21,10 +26,9 @@
 <template>
   <div class ="home">
     <SearchBar/>
-   <BannerComponent
-  v-for="(banner, index) in productStore.banners"
+   <BannerComponent v-if="allBannerImages.length >0"
   :key="index"
-  :images="[ `http://localhost:3000${banner.imageUrl}` ]"
+  :images="allBannerImages"
 />
 
   </div>

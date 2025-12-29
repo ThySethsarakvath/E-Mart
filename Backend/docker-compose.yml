@@ -40,3 +40,28 @@ services:
       - /app/node_modules
     depends_on:
       - rabbitmq
+  postgres:
+    image: postgres:16
+    container_name: e_mart_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: e_mart
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: e_mart_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@emart.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
