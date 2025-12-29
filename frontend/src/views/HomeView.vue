@@ -3,12 +3,14 @@ import BannerComponent from '@/components/BannerComponent.vue';
 import SearchBar from '../components/SearchBar.vue'
 import { useProductStore } from '../stores/product';
 import PromotionComponent from '@/components/PromotionComponent.vue';
+import ValuePropsComponent from '@/components/ValuePropsComponent.vue';
 export default {
   name: 'HomeView',
   components: {
     SearchBar,
     BannerComponent,
     PromotionComponent,
+    ValuePropsComponent,
   },
   setup() {
     const productStore = useProductStore();
@@ -43,6 +45,8 @@ export default {
         <PromotionComponent v-for="promotion in productStore.promotions" :key="promotion.id" :promotion="promotion" />
       </div>
     </div>
+    <ValuePropsComponent/>
+    <img src="../assets/pride.png" style="margin-top: 100px; border-radius: 20px;">
   </div>
 </template>
 
@@ -59,7 +63,7 @@ export default {
 
 .promotions-section {
   width: 100%;
-  margin-top: 40px;
+  margin-top: 50px;
 }
 
 .section-header {
@@ -97,7 +101,7 @@ export default {
 .promotions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 24px;
+  gap: 50px;
   width: 100%;
 }
 
