@@ -36,7 +36,7 @@ export default {
       <div class="section-header">
         <div class="today-label-wrapper">
           <div class="block"></div>
-        <span class="today-label">Today's</span>
+          <span class="today-label">Today's</span>
         </div>
         <h2 class="section-title">Promotions</h2>
       </div>
@@ -45,8 +45,8 @@ export default {
         <PromotionComponent v-for="promotion in productStore.promotions" :key="promotion.id" :promotion="promotion" />
       </div>
     </div>
-    <ValuePropsComponent/>
-    <img src="../assets/pride.png" style="margin-top: 100px; border-radius: 20px;">
+    <ValuePropsComponent />
+    <img src="../assets/pride.png" class="pride">
   </div>
 </template>
 
@@ -103,6 +103,15 @@ export default {
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 50px;
   width: 100%;
+}
+
+.pride {
+  margin-top: 100px;
+  border-radius: 20px;
+  width: 100%;
+  height: auto;
+  max-width: 1200px;
+  display: block;
 }
 
 @media (max-width: 1024px) {
