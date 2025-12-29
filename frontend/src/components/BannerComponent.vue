@@ -78,6 +78,7 @@ export default {
   position: relative;
   overflow: hidden;
   border-radius: 15px;
+  border: 5px solid #b0cff8;
 }
 
 .banner-img {
