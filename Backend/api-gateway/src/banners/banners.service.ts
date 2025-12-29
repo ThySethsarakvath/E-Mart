@@ -1,28 +1,31 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Banner } from './banner.entity';
 
 @Injectable()
 export class BannersService {
-  private banners: any[] = [];
+  constructor(
+    @InjectRepository(Banner)
+    private readonly bannerRepo: Repository<Banner>,
+  ) {}
 
   findAll() {
-    return this.banners;
+    return this.bannerRepo.find();
   }
 
-  create(data: any) {
-    const banner = {
+  async create(data: any) {
+    const banner = this.bannerRepo.create({
       title: data.title,
       subtitle: data.subtitle,
-      imageUrl: data.image ? `/uploads/${data.image.filename}` : null,
-    };
-
-    this.banners.push(banner);
+      imagePath: data.image.filename,
+    });
 
     return {
       message: 'Banner created successfully',
-      banner,
+      banner: await this.bannerRepo.save(banner),
     };
   }
 }
