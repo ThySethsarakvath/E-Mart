@@ -1,10 +1,9 @@
 services:
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5673:5672"
+      - "15673:15672"
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
@@ -13,10 +12,9 @@ services:
     build:
       context: ./api-gateway
       dockerfile: Dockerfile.dev
-    container_name: api-gateway
     command: npm run start:dev
     ports:
-      - "3000:3000"
+      - "4000:3000"
     environment:
       RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
       CHOKIDAR_USEPOLLING: "true"
@@ -30,7 +28,6 @@ services:
     build:
       context: ./order-worker
       dockerfile: Dockerfile.dev
-    container_name: order-worker
     command: npm run start:dev
     environment:
       RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
@@ -40,21 +37,20 @@ services:
       - /app/node_modules
     depends_on:
       - rabbitmq
+
   postgres:
     image: postgres:16
-    container_name: e_mart_postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: e_mart
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - emart_pgdata:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: e_mart_pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@emart.com
       PGADMIN_DEFAULT_PASSWORD: admin
@@ -64,4 +60,4 @@ services:
       - postgres
 
 volumes:
-  pgdata:
+  emart_pgdata:

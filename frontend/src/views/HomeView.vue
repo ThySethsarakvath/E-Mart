@@ -21,7 +21,7 @@ export default {
   },
   computed: {
     allBannerImages() {
-      return this.productStore.banners.map(banner => `http://localhost:3000/uploads/banners/${banner.imagePath}`);
+      return this.productStore.banners.map(banner => `http://localhost:4000/uploads/banners/${banner.imagePath}`);
     }
   }
 }

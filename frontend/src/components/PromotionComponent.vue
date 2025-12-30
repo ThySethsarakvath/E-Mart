@@ -9,7 +9,7 @@ export default {
   },
   computed: {
     imageUrl() {
-      return `http://localhost:3000/uploads/promotions/${this.promotion.imagePath}`;
+      return `http://localhost:4000/uploads/promotions/${this.promotion.imagePath}`;
     },
     discountLabel() {
       return `-${this.promotion.discountPercent}%`;
