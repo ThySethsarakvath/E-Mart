@@ -1,10 +1,11 @@
 <script>
 import HeaderComponent from './components/HeaderComponent.vue'
-
+import FooterComponent from './components/FooterComponent.vue';
 export default {
   name: 'App',
   components: {
     HeaderComponent,
+    FooterComponent,  
   },
 }
 </script>
@@ -13,6 +14,7 @@ export default {
   <div id="app">
     <HeaderComponent />
     <RouterView />
+    <FooterComponent />
   </div>
 </template>
 
@@ -25,7 +27,7 @@ export default {
 
 body {
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background-color: #f8f9fa;
+  background-color: #e7e7e7;
 }
 
 #app {
