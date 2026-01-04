@@ -10,6 +10,7 @@ async function bootstrap() {
   try {
     mkdirSync('./uploads/banners', { recursive: true });
     mkdirSync('./uploads/promotions', { recursive: true });
+    mkdirSync('./uploads/categories', { recursive: true });
   } catch (error) {
     // Directory already exists
   }
