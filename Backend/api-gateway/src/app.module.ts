@@ -4,11 +4,13 @@ import { AppService } from './app.service';
 import { BannersModule } from './banners/banners.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PromotionsModule } from './promotions/promotions.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
     BannersModule,
     PromotionsModule,
+    CategoriesModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'postgres',
