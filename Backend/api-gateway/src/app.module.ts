@@ -5,12 +5,14 @@ import { BannersModule } from './banners/banners.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PromotionsModule } from './promotions/promotions.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ArrivalsModule } from './arrivals/arrivals.module';
 
 @Module({
   imports: [
     BannersModule,
     PromotionsModule,
     CategoriesModule,
+    ArrivalsModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'postgres',
