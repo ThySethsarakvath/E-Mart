@@ -63,7 +63,53 @@ export default {
           :category="category"
         />
       </div>
+      <div class="section-container">
+      <div class="section-header">
+        <div class="label-container">
+          <div class="block"></div> <span class="minor-label"></span>
+        </div>
+        <h2 class="section-title">New Arrival</h2>
+      </div>
+
+      <div class="new-arrival-space">
+        
+      </div>
     </div>
+  <div class="payment-section">
+      <h2 class="section-title" style="text-align: center; font-size: 45px;">Payment methods</h2>
+      <div class="payment-icons">
+        
+        <div class="payment-card wing">
+          <img src="../assets/paymentimg/wing.png" alt="Wing" />
+        </div>
+
+        <div class="payment-card aba">
+          <img src="../assets/paymentimg/aba.png" alt="ABA" />
+        </div>
+
+        <div class="payment-card acleda">
+          <img src="../assets/paymentimg/acleda.png" alt="ACLEDA" />
+        </div>
+
+        <div class="payment-card khqr">
+          <img src="../assets/paymentimg/khqr.png" alt="KHQR" />
+        </div>
+
+        <div class="payment-card cash">
+          <img src="../assets/paymentimg/cash.png" alt="Cash" />
+        </div>
+
+        <div class="payment-card transparent">
+          <img src="../assets/paymentimg/visa.png" alt="Visa" />
+        </div>
+
+        <div class="payment-card apple">
+          <img src="../assets/paymentimg/apple.png" alt="Apple Pay" />
+        </div>
+
+      </div>
+    </div>
+  </div>
   </div>
 </template>
 
@@ -202,4 +248,44 @@ export default {
       gap: 10px;
     }
 }
+
+.new-arrival-space {
+  width: 100%;
+  height: 300px;
+}
+
+.payment-section {
+  width: 100%;
+  margin-top: 50px;
+  padding: 40px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.payment-icons {
+  display: flex;            
+  justify-content: center;   
+  align-items: center;       
+  gap: 5px;                 
+  flex-wrap: wrap;           
+  margin-top: 20px;
+}
+
+
+.payment-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.payment-card img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+
+
 </style>
