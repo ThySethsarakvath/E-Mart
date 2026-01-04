@@ -4,6 +4,7 @@ import SearchBar from '../components/SearchBar.vue'
 import { useProductStore } from '../stores/product';
 import PromotionComponent from '@/components/PromotionComponent.vue';
 import ValuePropsComponent from '@/components/ValuePropsComponent.vue';
+import CategoriesComponent from '@/components/CategoriesComponent.vue';
 export default {
   name: 'HomeView',
   components: {
@@ -11,6 +12,7 @@ export default {
     BannerComponent,
     PromotionComponent,
     ValuePropsComponent,
+    CategoriesComponent
   },
   setup() {
     const productStore = useProductStore();
@@ -34,19 +36,34 @@ export default {
 
     <div class="promotions-section">
       <div class="section-header">
-        <div class="today-label-wrapper">
+        <div class="semi-wrapper">
           <div class="block"></div>
-          <span class="today-label">Today's</span>
+          <span class="minor-label">Today's</span>
         </div>
         <h2 class="section-title">Promotions</h2>
       </div>
-
       <div class="promotions-grid">
         <PromotionComponent v-for="promotion in productStore.promotions" :key="promotion.id" :promotion="promotion" />
       </div>
     </div>
     <ValuePropsComponent />
     <img src="../assets/pride.png" class="pride">
+    <div class="categories-section">
+      <div class="section-header">
+        <div class ="semi-wrapper">
+          <div class="block"></div>
+          <span class="minor-label">Categories</span>
+        </div>
+        <h2 class="section-title">Browse By Categories</h2>
+      </div>
+      <div class="categories-grid">
+        <CategoriesComponent
+          v-for="category in productStore.categories"
+          :key="category.id"
+          :category="category"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -78,7 +95,7 @@ export default {
   letter-spacing: 1px;
 }
 
-.today-label-wrapper {
+.semi-wrapper {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -114,6 +131,18 @@ export default {
   display: block;
 }
 
+  .categories-section {
+    width: 100%;
+    margin-top: 90px;
+  }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    width: 100%;
+  }
+
 @media (max-width: 1024px) {
   .home {
     padding: 30px;
@@ -127,6 +156,11 @@ export default {
   .section-title {
     font-size: 28px;
   }
+
+  .categories-grid {
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 14px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -142,6 +176,11 @@ export default {
   .section-title {
     font-size: 24px;
   }
+
+  .categories-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -157,5 +196,10 @@ export default {
   .section-title {
     font-size: 20px;
   }
+
+  .categories-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
 }
 </style>

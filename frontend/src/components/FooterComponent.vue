@@ -5,7 +5,7 @@
         <h3>E-Mart</h3>
         <p>Your one-stop shop for everything you need. Quality products, fast delivery, and excellent support.</p>
       </div>
-      
+
       <div class="footer-section">
         <h3>Quick Links</h3>
         <ul>
@@ -17,7 +17,7 @@
 
       <div class="footer-section">
         <h3>Contact</h3>
-        
+
         <div class="contact-item">
           <img src="@/assets/icon/location.png" alt="Location" class="icon" />
           <span>Phnom Penh, Cambodia</span>
@@ -37,7 +37,7 @@
     </div>
 
     <div class="footer-bottom">
-      <p>&copy; 2024 E-Mart. All rights reserved.</p>
+      <p>&copy; 2026 E-Mart. All rights reserved.</p>
     </div>
   </footer>
 </template>
@@ -50,11 +50,11 @@ export default {
 
 <style scoped>
 .footer {
-  background-color: #ffffff; 
-  color: #333; 
+  background-color: #ffffff;
+  color: #333;
   padding: 60px 20px 20px;
   margin-top: auto;
-  border-top: 1px solid #ececec; 
+  border-top: 1px solid #ececec;
 }
 
 .footer-content {
@@ -69,13 +69,13 @@ export default {
 .footer-section h3 {
   font-size: 1.2rem;
   margin-bottom: 20px;
-  color: #0d6efd; 
+  color: #0d6efd;
   font-weight: 700;
 }
 
 .footer-section p {
   line-height: 1.6;
-  color: #7e7e7e; 
+  color: #7e7e7e;
 }
 
 .footer-section ul {
@@ -88,7 +88,7 @@ export default {
 }
 
 .footer-section ul li a {
-  color: #253d4e; 
+  color: #253d4e;
   text-decoration: none;
   transition: 0.3s;
   font-weight: 500;
