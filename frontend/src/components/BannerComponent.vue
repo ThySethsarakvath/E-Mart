@@ -80,7 +80,7 @@ export default {
   position: relative;
   overflow: hidden;
   border-radius: 15px;
-  border: 5px solid #b0cff8;
+  border: 5px solid #006eff;
 }
 
 .banner-img {
