@@ -5,6 +5,7 @@ import { useProductStore } from '../stores/product';
 import PromotionComponent from '@/components/PromotionComponent.vue';
 import ValuePropsComponent from '@/components/ValuePropsComponent.vue';
 import CategoriesComponent from '@/components/CategoriesComponent.vue';
+import ArrivalsComponent from '@/components/ArrivalsComponent.vue';
 export default {
   name: 'HomeView',
   components: {
@@ -13,6 +14,8 @@ export default {
     PromotionComponent,
     ValuePropsComponent,
     CategoriesComponent
+    ,
+    ArrivalsComponent
   },
   setup() {
     const productStore = useProductStore();
@@ -65,14 +68,16 @@ export default {
       </div>
       <div class="section-container">
       <div class="section-header">
-        <div class="label-container">
-          <div class="block"></div> <span class="minor-label"></span>
+      <div class="semi-wrapper">
+          <div class="block"></div> 
+          <span class="minor-label">Featured</span>
         </div>
         <h2 class="section-title">New Arrival</h2>
       </div>
-
+      
       <div class="new-arrival-space">
-        
+   
+        <ArrivalsComponent />
       </div>
     </div>
   <div class="payment-section">
@@ -251,7 +256,8 @@ export default {
 
 .new-arrival-space {
   width: 100%;
-  height: 300px;
+  height: auto;
+  min-height: 200px;
 }
 
 .payment-section {
