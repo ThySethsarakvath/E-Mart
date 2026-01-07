@@ -5,6 +5,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { join } from 'path';
 import { mkdirSync } from 'fs';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   try {
@@ -12,12 +13,13 @@ async function bootstrap() {
     mkdirSync('./uploads/promotions', { recursive: true });
     mkdirSync('./uploads/categories', { recursive: true });
     mkdirSync('./uploads/arrivals', { recursive: true });
+    mkdirSync('./uploads/products', { recursive: true });
   } catch (error) {
     // Directory already exists
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.enableCors({
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
@@ -27,7 +29,7 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   });
-
+  
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
