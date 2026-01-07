@@ -13,8 +13,7 @@ export default {
     BannerComponent,
     PromotionComponent,
     ValuePropsComponent,
-    CategoriesComponent
-    ,
+    CategoriesComponent,
     ArrivalsComponent
   },
   setup() {
@@ -51,70 +50,67 @@ export default {
     </div>
     <ValuePropsComponent />
     <img src="../assets/pride.png" class="pride">
+
     <div class="categories-section">
       <div class="section-header">
-        <div class ="semi-wrapper">
+        <div class="semi-wrapper">
           <div class="block"></div>
           <span class="minor-label">Categories</span>
         </div>
         <h2 class="section-title">Browse By Categories</h2>
       </div>
       <div class="categories-grid">
-        <CategoriesComponent
-          v-for="category in productStore.categories"
-          :key="category.id"
-          :category="category"
-        />
+        <CategoriesComponent v-for="category in productStore.categories" :key="category.id" :category="category" />
       </div>
-      <div class="section-container">
-      <div class="section-header">
-      <div class="semi-wrapper">
-          <div class="block"></div> 
-          <span class="minor-label">Featured</span>
+
+      <div class="arrivals-section">
+        <div class="section-header">
+          <div class="semi-wrapper">
+            <div class="block"></div>
+            <span class="minor-label">Featured</span>
+          </div>
+          <h2 class="section-title">New Arrival</h2>
         </div>
-        <h2 class="section-title">New Arrival</h2>
+        <div class="arrivals-grid">
+          <ArrivalsComponent v-for="(arrival, index) in productStore.arrivals" :key="arrival.id" :arrival="arrival"
+            :index="index" />
+        </div>
       </div>
-      
-      <div class="new-arrival-space">
-   
-        <ArrivalsComponent />
-      </div>
-    </div>
-  <div class="payment-section">
-      <h2 class="section-title" style="text-align: center; font-size: 45px;">Payment methods</h2>
-      <div class="payment-icons">
-        
-        <div class="payment-card wing">
-          <img src="../assets/paymentimg/wing.png" alt="Wing" />
-        </div>
+      <div class="payment-section">
+        <h2 class="section-title" style="text-align: center; font-size: 45px;">Payment methods</h2>
+        <div class="payment-icons">
 
-        <div class="payment-card aba">
-          <img src="../assets/paymentimg/aba.png" alt="ABA" />
-        </div>
+          <div class="payment-card wing">
+            <img src="../assets/paymentimg/wing.png" alt="Wing" />
+          </div>
 
-        <div class="payment-card acleda">
-          <img src="../assets/paymentimg/acleda.png" alt="ACLEDA" />
-        </div>
+          <div class="payment-card aba">
+            <img src="../assets/paymentimg/aba.png" alt="ABA" />
+          </div>
 
-        <div class="payment-card khqr">
-          <img src="../assets/paymentimg/khqr.png" alt="KHQR" />
-        </div>
+          <div class="payment-card acleda">
+            <img src="../assets/paymentimg/acleda.png" alt="ACLEDA" />
+          </div>
 
-        <div class="payment-card cash">
-          <img src="../assets/paymentimg/cash.png" alt="Cash" />
-        </div>
+          <div class="payment-card khqr">
+            <img src="../assets/paymentimg/khqr.png" alt="KHQR" />
+          </div>
 
-        <div class="payment-card transparent">
-          <img src="../assets/paymentimg/visa.png" alt="Visa" />
-        </div>
+          <div class="payment-card cash">
+            <img src="../assets/paymentimg/cash.png" alt="Cash" />
+          </div>
 
-        <div class="payment-card apple">
-          <img src="../assets/paymentimg/apple.png" alt="Apple Pay" />
-        </div>
+          <div class="payment-card transparent">
+            <img src="../assets/paymentimg/visa.png" alt="Visa" />
+          </div>
 
+          <div class="payment-card apple">
+            <img src="../assets/paymentimg/apple.png" alt="Apple Pay" />
+          </div>
+
+        </div>
       </div>
     </div>
-  </div>
   </div>
 </template>
 
@@ -182,82 +178,31 @@ export default {
   display: block;
 }
 
-  .categories-section {
-    width: 100%;
-    margin-top: 90px;
-  }
-
-  .categories-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    width: 100%;
-  }
-
-@media (max-width: 1024px) {
-  .home {
-    padding: 30px;
-  }
-
-  .promotions-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 20px;
-  }
-
-  .section-title {
-    font-size: 28px;
-  }
-
-  .categories-grid {
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 14px;
-    }
-}
-
-@media (max-width: 768px) {
-  .home {
-    padding: 20px;
-  }
-
-  .promotions-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
-  }
-
-  .section-title {
-    font-size: 24px;
-  }
-
-  .categories-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-  .home {
-    padding: 16px;
-  }
-
-  .promotions-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .section-title {
-    font-size: 20px;
-  }
-
-  .categories-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-}
-
-.new-arrival-space {
+.categories-section {
   width: 100%;
-  height: auto;
-  min-height: 200px;
+  margin-top: 90px;
+}
+
+.arrivals-section {
+  width: 100%;
+  margin-top: 90px;
+}
+
+.arrivals-grid {
+  max-width: 1152px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(210px, auto);
+  gap: 20px;
+  padding: 50px 0;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  width: 100%;
 }
 
 .payment-section {
@@ -270,11 +215,11 @@ export default {
 }
 
 .payment-icons {
-  display: flex;            
-  justify-content: center;   
-  align-items: center;       
-  gap: 5px;                 
-  flex-wrap: wrap;           
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
   margin-top: 20px;
 }
 
@@ -292,6 +237,71 @@ export default {
   object-fit: contain;
 }
 
+@media (max-width: 1024px) {
+  .home {
+    padding: 30px;
+  }
 
+  .promotions-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .section-title {
+    font-size: 28px;
+  }
+
+  .categories-grid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 968px) {
+  .arrivals-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .home {
+    padding: 20px;
+  }
+
+  .promotions-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  .section-title {
+    font-size: 24px;
+  }
+
+  .categories-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home {
+    padding: 16px;
+  }
+
+  .promotions-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .categories-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+}
 
 </style>
