@@ -1,45 +1,48 @@
 <template>
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>E-Mart</h3>
-        <p>Your one-stop shop for everything you need. Quality products, fast delivery, and excellent support.</p>
-      </div>
-
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><router-link to="/">Home</router-link></li>
-          <li><router-link to="/about">About Us</router-link></li>
-          <li><router-link to="/products">Products</router-link></li>
-        </ul>
-      </div>
-
-      <div class="footer-section">
-        <h3>Contact</h3>
-
-        <div class="contact-item">
-          <img src="@/assets/icon/location.png" alt="Location" class="icon" />
-          <span>Phnom Penh, Cambodia</span>
+  <div class="footer-wrapper">
+    <img src="@/assets/footer.png" class="img-footer" />
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>E-Mart</h3>
+          <p>Your one-stop shop for everything you need. Quality products, fast delivery, and excellent support.</p>
         </div>
 
-        <div class="contact-item">
-          <img src="@/assets/icon/phone.png" alt="Phone" class="icon" />
-          <span>+855 95490904</span>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><router-link to="/">Home</router-link></li>
+            <li><router-link to="/about">About Us</router-link></li>
+            <li><router-link to="/products">Products</router-link></li>
+          </ul>
         </div>
 
-        <div class="contact-item">
-          <img src="@/assets/icon/mail.png" alt="Email" class="icon" />
-          <span>Emartcambodia@gmail.coltd</span>
+        <div class="footer-section">
+          <h3>Contact</h3>
+
+          <div class="contact-item">
+            <img src="@/assets/icon/location.png" alt="Location" class="icon" />
+            <span>Phnom Penh, Cambodia</span>
+          </div>
+
+          <div class="contact-item">
+            <img src="@/assets/icon/phone.png" alt="Phone" class="icon" />
+            <span>+855 95490904</span>
+          </div>
+
+          <div class="contact-item">
+            <img src="@/assets/icon/mail.png" alt="Email" class="icon" />
+            <span>Emartcambodia@gmail.coltd</span>
+          </div>
         </div>
+
       </div>
 
-    </div>
-
-    <div class="footer-bottom">
-      <p>&copy; 2026 E-Mart. All rights reserved.</p>
-    </div>
-  </footer>
+      <div class="footer-bottom">
+        <p>&copy; 2026 E-Mart. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
 </template>
 
 <script>
@@ -49,6 +52,19 @@ export default {
 </script>
 
 <style scoped>
+.footer-wrapper {
+  text-align: center;
+}
+
+.img-footer {
+  display: block;
+  margin: 0 auto;
+  max-width: 1400px;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
 .footer {
   background-color: #ffffff;
   color: #333;
