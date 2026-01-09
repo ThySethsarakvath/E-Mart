@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Body,
   Controller,
@@ -24,9 +20,40 @@ import { UpdateCategoriesDto } from './dto/update-categories.dto';
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
+
+  @Get('subcategories')
+  findAllSubs() {
+    return this.categoriesService.findAllSubCategories();
+  }
+
+
+  @Get('subcategories/:id')
+  findOneSub(@Param('id') id: string) {
+    return this.categoriesService.findOneSubCategory(+id);
+  }
+
+
+  @Post('subcategories')
+  createSub(@Body() body: { name: string; categoryId: number }) {
+    return this.categoriesService.createSubCategory(body.name, body.categoryId);
+  }
+
+
+  @Delete('subcategories/:id')
+  removeSub(@Param('id') id: string) {
+    return this.categoriesService.removeSubCategory(+id);
+  }
+
+ 
+
   @Get()
-  getAll() {
+  findAll() {
     return this.categoriesService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.categoriesService.findOne(+id);
   }
 
   @Post()
@@ -42,7 +69,8 @@ export class CategoriesController {
     }),
   )
   create(@Body() dto: CreateCategoriesDto, @UploadedFile() file: any) {
-    return this.categoriesService.create(dto, file.filename);
+    const fileName = file ? file.filename : '';
+    return this.categoriesService.create(dto, fileName);
   }
 
   @Patch(':id')
@@ -65,11 +93,11 @@ export class CategoriesController {
     if (file) {
       dto.imagePath = file.filename;
     }
-    return this.categoriesService.update(id, dto);
+    return this.categoriesService.update(+id, dto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.categoriesService.remove(id);
+    return this.categoriesService.remove(+id);
   }
 }

@@ -2,8 +2,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "5673:5672"
-      - "15673:15672"
+      -  "5674:5672"
+      - "15674:15672"
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
@@ -14,7 +14,7 @@ services:
       dockerfile: Dockerfile.dev
     command: npm run start:dev
     ports:
-      - "4000:3000"
+      - "4001:3000"
     environment:
       RABBITMQ_URL: REMOVED_SECRET
       CHOKIDAR_USEPOLLING: "true"
@@ -45,7 +45,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: e_mart
     ports:
-      - "5433:5432"
+      - "5435:5432"
     volumes:
       - emart_pgdata:/var/lib/postgresql/data
 
@@ -55,7 +55,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@emart.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - "5050:80"
+      - "5051:80"
     depends_on:
       - postgres
 

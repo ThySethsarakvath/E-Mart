@@ -57,7 +57,11 @@ export default {
   background: #fff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
-
+.router-link-active {
+  color: #0d6efd !important; /* The Blue Color */
+  font-weight: bold;
+  border-bottom: 2px solid #0d6efd; /* Optional: Adds a little underline */
+}
 .top-header {
   padding: 20px 0;
   border-bottom: 1px solid #ececec;

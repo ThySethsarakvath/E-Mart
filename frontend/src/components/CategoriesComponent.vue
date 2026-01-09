@@ -1,4 +1,7 @@
 <script>
+import { useRouter, useRoute } from 'vue-router';
+import { computed } from 'vue';
+
 export default {
   name: 'CategoryComponent',
   props: {
@@ -7,16 +10,38 @@ export default {
       required: true
     }
   },
+  setup(props) {
+    const router = useRouter();
+    const route = useRoute(); // 1. Get current route info
+
+    const navigateToCategory = () => {
+      router.push({ 
+        path: '/products', 
+        hash: `#category-${props.category.id}` 
+      });
+    };
+
+    
+    const isActive = computed(() => {
+      return route.hash === `#category-${props.category.id}`;
+    });
+
+    return { navigateToCategory, isActive };
+  },
   computed: {
     imageUrl() {
-      return `http://localhost:4000/uploads/categories/${this.category.imagePath}`;
+      return `http://localhost:4001/uploads/categories/${this.category.imagePath}`;
     }
   }
 }
 </script>
 
 <template>
-  <div class="category-card">
+  <div 
+    class="category-card" 
+    :class="{ 'active-card': isActive }" 
+    @click="navigateToCategory"
+  >
     <div class="icon-container">
       <img :src="imageUrl" :alt="category.name" />
     </div>
@@ -45,6 +70,20 @@ export default {
   box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
 }
 
+
+.active-card {
+  border-color: #0d6efd !important;     
+  background-color: #f0f7ff;            
+  transform: translateY(-4px);         
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25); /* Stronger Glow */
+}
+
+
+.active-card .category-name {
+  color: #0d6efd; 
+  font-weight: 700;
+}
+
 .icon-container {
   width: 64px;
   height: 64px;
@@ -58,6 +97,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: contain;
+ 
   filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(195deg) brightness(98%) contrast(105%);
 }
 
@@ -75,12 +115,10 @@ export default {
     padding: 20px 12px;
     min-height: 120px;
   }
-
   .icon-container {
     width: 56px;
     height: 56px;
   }
-
   .category-name {
     font-size: 13px;
   }
@@ -91,13 +129,11 @@ export default {
     padding: 16px 8px;
     min-height: 100px;
   }
-
   .icon-container {
     width: 48px;
     height: 48px;
     margin-bottom: 8px;
   }
-
   .category-name {
     font-size: 12px;
   }

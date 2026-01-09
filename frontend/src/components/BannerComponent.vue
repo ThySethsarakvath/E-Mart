@@ -79,8 +79,12 @@ export default {
   margin-top: 40px;
   position: relative;
   overflow: hidden;
-  border-radius: 15px;
-  border: 5px solid #006eff;
+  /* border-radius: 15px; */
+  /* border: 5px solid #006eff; */
+
+
+
+  
 }
 
 .banner-img {
