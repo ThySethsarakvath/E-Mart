@@ -30,7 +30,7 @@ export default {
   },
   computed: {
     imageUrl() {
-      return `http://localhost:4001/uploads/categories/${this.category.imagePath}`;
+      return `http://localhost:4000/uploads/categories/${this.category.imagePath}`;
     }
   }
 }

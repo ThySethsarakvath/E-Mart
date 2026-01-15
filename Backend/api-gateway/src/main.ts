@@ -12,6 +12,7 @@ async function bootstrap() {
     mkdirSync('./uploads/promotions', { recursive: true });
     mkdirSync('./uploads/categories', { recursive: true });
     mkdirSync('./uploads/arrivals', { recursive: true });
+    mkdirSync('./uploads/products', { recursive: true });
   } catch (error) {
     // Directory already exists
   }
@@ -28,6 +29,6 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 4000, '0.0.0.0');
 }
 bootstrap();

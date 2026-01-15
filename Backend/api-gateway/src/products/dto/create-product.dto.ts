@@ -3,5 +3,10 @@ export class CreateProductDto {
   price: number;
   description: string;
   categoryId: number; 
-  imagePath: string; 
+  imagePath: string;
+  
+  
+  subCategoryId?: number;
+  rating?: number;
+  reviewCount?: number;
 }

@@ -3,9 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
 import { Product } from './entities/product.entity';
-
+import { SubCategory } from '../categories/entities/subcategory.entity';
+import { Categories } from '../categories/entities/categories.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([Product])],
+  imports: [
+    TypeOrmModule.forFeature([Product, Categories, SubCategory]), 
+  ],
   controllers: [ProductsController],
   providers: [ProductsService],
 })

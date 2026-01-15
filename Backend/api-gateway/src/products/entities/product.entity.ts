@@ -19,15 +19,19 @@ export class Product {
   @Column()
   imagePath: string;
 
-  
+
+  @Column('decimal', { precision: 3, scale: 1, default: 0 })
+  rating: number; 
+
+  @Column({ default: 0 })
+  reviewCount: number; 
+
   @Column()
   categoryId: number; 
 
-  
   @ManyToOne(() => Categories, (category) => category.products, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'categoryId' })
   category: Categories;  
-
  
   @Column({ nullable: true })
   subCategoryId: number;

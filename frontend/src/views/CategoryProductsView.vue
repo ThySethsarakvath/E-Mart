@@ -64,7 +64,7 @@ export default {
     <div class="products-grid">
       <div v-for="product in products" :key="product.id" class="product-card">
         <div class="image-wrapper">
-          <img :src="`http://localhost:4001/uploads/products/${product.imagePath}`" :alt="product.name">
+          <img :src="`http://localhost:4000/uploads/products/${product.imagePath}`" :alt="product.name">
         </div>
         <div class="product-info">
           <h3>{{ product.name }}</h3>
