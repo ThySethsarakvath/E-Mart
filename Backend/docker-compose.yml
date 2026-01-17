@@ -5,8 +5,8 @@ services:
       - "5673:5672"
       - "15673:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
 
   api-gateway:
     build:
@@ -14,10 +14,10 @@ services:
       dockerfile: Dockerfile.dev
     command: npm run start:dev
     ports:
-      - "4001:3000"
+      - "${API_GATEWAY_PORT}:3000"
     environment:
-      RABBITMQ_URL: REMOVED_SECRET
-      CHOKIDAR_USEPOLLING: "true"
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING}
     volumes:
       - ./api-gateway:/app
       - /app/node_modules
@@ -30,15 +30,22 @@ services:
       dockerfile: Dockerfile.dev
     command: npm run start:dev
     ports:
-      - "4000:3000"
+      - "${ORDER_WORKER_PORT}:3000"
     environment:
-      RABBITMQ_URL: REMOVED_SECRET
-      CHOKIDAR_USEPOLLING: "true"
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING}
+
+      DB_HOST: ${ORDER_DB_HOST}
+      DB_PORT: ${ORDER_DB_PORT}
+      DB_USER: ${ORDER_DB_USER}
+      DB_PASS: ${ORDER_DB_PASS}
+      DB_NAME: ${ORDER_DB_NAME}
     volumes:
       - ./order-worker:/app
       - /app/node_modules
     depends_on:
       - rabbitmq
+      - emart-db
 
   auth-service:
     build:
@@ -46,36 +53,56 @@ services:
       dockerfile: Dockerfile.dev
     command: npm run start:dev
     ports:
-      - "4002:3000"
+      - "${AUTH_SERVICE_PORT}:3000"
     environment:
-      RABBITMQ_URL: REMOVED_SECRET
-      CHOKIDAR_USEPOLLING: "true"
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING}
+
+      DB_HOST: ${AUTH_DB_HOST}
+      DB_PORT: ${AUTH_DB_PORT}
+      DB_USER: ${AUTH_DB_USER}
+      DB_PASS: ${AUTH_DB_PASS}
+      DB_NAME: ${AUTH_DB_NAME}
     volumes:
       - ./auth-service:/app
       - /app/node_modules
     depends_on:
       - rabbitmq
+      - auth-db
 
-  postgres:
+  emart-db:
     image: postgres:16
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: e_mart
+      POSTGRES_USER: ${EMART_DB_USER}
+      POSTGRES_PASSWORD: ${EMART_DB_PASS}
+      POSTGRES_DB: ${EMART_DB_NAME}
     ports:
-      - "5433:5432"
+      - "${EMART_DB_PORT}:5432"
     volumes:
       - emart_pgdata:/var/lib/postgresql/data
+
+  auth-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${AUTH_DB_USER}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASS}
+      POSTGRES_DB: ${AUTH_DB_NAME}
+    ports:
+      - "${AUTH_DB_PORT}:5432"
+    volumes:
+      - auth_pgdata:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@emart.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
-      - "5050:80"
+      - "${PGADMIN_PORT}:80"
     depends_on:
-      - postgres
+      - emart-db
+      - auth-db
 
 volumes:
   emart_pgdata:
+  auth_pgdata:
