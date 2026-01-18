@@ -1,22 +1,54 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../../entities/user.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(
+    private configService: ConfigService,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_ACCESS_SECRET,
+      ignoreExpiration: false,
+      secretOrKey: configService.get('JWT_ACCESS_SECRET'),
     });
   }
 
-  validate(payload: any) {
-    console.log('JWT Payload:', payload);
-    return payload;
+  async validate(payload: any) {
+    const user = await this.userRepository.findOne({
+      where: { id: payload.sub },
+      relations: [
+        'userRoles',
+        'userRoles.role',
+        'userRoles.role.rolePermissions',
+        'userRoles.role.rolePermissions.permission',
+      ],
+    });
+
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('User not found or inactive');
+    }
+
+    // Extract roles and permissions
+    const roles = user.userRoles.map((ur) => ur.role.name);
+    const permissions = user.userRoles
+      .flatMap((ur) => ur.role.rolePermissions)
+      .map((rp) => rp.permission.name);
+
+    return {
+      userId: user.id,
+      email: user.email,
+      roles,
+      permissions,
+    };
   }
 }

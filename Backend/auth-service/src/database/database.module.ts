@@ -1,22 +1,36 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { User } from '../entities/user.entity';
+import { Role } from '../entities/role.entity';
+import { Permission } from '../entities/permission.entity';
+import { UserRole } from '../entities/user-role.entity';
+import { RolePermission } from '../entities/role-permission.entity';
+import { RefreshToken } from '../entities/refresh-token.entity';
 
 @Module({
   imports: [
-    ConfigModule,
     TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
+      imports: [ConfigModule],
       useFactory: (cfg: ConfigService) => ({
         type: 'postgres',
         host: cfg.get('AUTH_DB_HOST'),
-        port: Number(cfg.get('AUTH_DB_PORT')),
+        port: cfg.get('AUTH_DB_PORT'),
         username: cfg.get('AUTH_DB_USER'),
         password: cfg.get('AUTH_DB_PASS'),
         database: cfg.get('AUTH_DB_NAME'),
-        autoLoadEntities: true,
-        synchronize: true, // IMPORTANT: use migrations in real projects
+        entities: [
+          User,
+          Role,
+          Permission,
+          UserRole,
+          RolePermission,
+          RefreshToken,
+        ],
+        synchronize: true,
+        logging: false,
       }),
+      inject: [ConfigService],
     }),
   ],
 })

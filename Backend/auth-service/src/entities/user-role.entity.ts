@@ -1,15 +1,26 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Role } from './role.entity';
 
 @Entity('user_roles')
 export class UserRole {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @ManyToOne(() => User, (u) => u.roles, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.userRoles, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
   user: User;
 
-  @ManyToOne(() => Role, { eager: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => Role, (role) => role.userRoles, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'roleId' })
   role: Role;
+
+  @CreateDateColumn()
+  assignedAt: Date;
 }

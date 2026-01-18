@@ -2,32 +2,42 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
   CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
-import { UserRole } from './user-role.entity';
 import { RefreshToken } from './refresh-token.entity';
+import { UserRole } from './user-role.entity';
 
-@Entity('auth_users')
+@Entity('users')
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ unique: true })
   email: string;
 
   @Column()
-  passwordHash: string;
+  password: string;
+
+  @Column({ nullable: true })
+  firstName: string;
+
+  @Column({ nullable: true })
+  lastName: string;
 
   @Column({ default: true })
   isActive: boolean;
 
-  @OneToMany(() => UserRole, (ur) => ur.user)
-  roles: UserRole[];
-
-  @OneToMany(() => RefreshToken, (rt) => rt.user)
-  refreshTokens: RefreshToken[];
-
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @OneToMany(() => UserRole, (userRole) => userRole.user)
+  userRoles: UserRole[];
+
+  @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
+  refreshTokens: RefreshToken[];
 }
