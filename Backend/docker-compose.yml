@@ -18,6 +18,10 @@ services:
     environment:
       RABBITMQ_URL: ${RABBITMQ_URL}
       CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_ACCESS_EXPIRES: ${JWT_ACCESS_EXPIRES}
+      JWT_REFRESH_EXPIRES: ${JWT_REFRESH_EXPIRES}
     volumes:
       - ./api-gateway:/app
       - /app/node_modules

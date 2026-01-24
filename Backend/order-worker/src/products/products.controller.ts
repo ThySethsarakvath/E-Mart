@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, UseInterceptors, UploadedFile, Delete } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseInterceptors,
+  UploadedFile,
+  Delete,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -20,7 +31,7 @@ export class ProductsController {
     return this.productsService.findByCategory(+id);
   }
 
-    @Delete(':id')
+  @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
   }
@@ -57,7 +68,10 @@ export class ProductsController {
     return this.productsService.update(+id, updateProductDto, imageFilename);
   }
 
-  create(@Body() createProductDto: CreateProductDto, @UploadedFile() file: any) {
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @UploadedFile() file: any,
+  ) {
     return this.productsService.create(createProductDto, file.filename);
   }
 }
