@@ -6,6 +6,8 @@ import ProductsView from '../views/ProductsView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import LoginView from '@/views/LoginView.vue'
 import { authGuard } from '@/auth/guard/guard'
+import AdminLayout from '@/views/AdminLayout.vue'
+import DashboardComponent from '@/components/admin/DashboardComponent.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -47,6 +49,23 @@ const router = createRouter({
       component: LoginView,
       meta: { guestOnly: true }
     },
+
+    {
+      path: '/admin',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresAdmin: true, hideHeader: true, hideFooter: true },
+      children: [
+        {
+          path: '',
+          redirect: '/admin/dashboard'
+        },
+        {
+          path: 'dashboard',
+          name: 'admin-dashboard',
+          component: DashboardComponent,
+        }
+      ]
+    }
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
@@ -54,7 +73,7 @@ const router = createRouter({
     }
 
     return { top: 0, behavior: 'smooth' }
-  },
+  }
 })
 
 router.beforeEach(authGuard);

@@ -92,7 +92,6 @@ export default {
   display: flex;
   flex-direction: column;
   background-color: #e7e7e7;
-  min-height: 80vh;
 }
 
 .auth-content {

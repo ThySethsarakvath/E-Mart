@@ -67,4 +67,28 @@ export default {
   isAuthenticated() {
     return !!localStorage.getItem('accessToken');
   },
+
+  hasRole(role) {
+  const user = this.getCurrentUser();
+  return user?.roles?.includes(role) || false;
+},
+
+hasPermission(permission) {
+  const user = this.getCurrentUser();
+  return user?.permissions?.includes(permission) || false;
+},
+
+hasAnyRole(roles) {
+  const user = this.getCurrentUser();
+  return roles.some(role => user?.roles?.includes(role)) || false;
+},
+
+hasAllPermissions(permissions) {
+  const user = this.getCurrentUser();
+  return permissions.every(permission => user?.permissions?.includes(permission)) || false;
+},
+
+isAdmin() {
+  return this.hasRole('admin');
+},
 };

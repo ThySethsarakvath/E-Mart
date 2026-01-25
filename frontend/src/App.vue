@@ -12,9 +12,15 @@ export default {
 
 <template>
   <div id="app">
-    <HeaderComponent />
-    <RouterView />
-    <FooterComponent />
+    <HeaderComponent v-if="!$route.meta.hideHeader" />
+
+    <router-view v-slot="{ Component }">
+      <transition name="fade" mode="out-in">
+        <component :is="Component" />
+      </transition>
+    </router-view>
+
+    <FooterComponent v-if="!$route.meta.hideFooter" />
   </div>
 </template>
 

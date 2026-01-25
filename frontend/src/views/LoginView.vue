@@ -57,11 +57,18 @@ export default {
 
       try {
         const response = await authService.login(this.form);
+        const isAdmin = authService.isAdmin();
 
         console.log('Login successful:', response.user);
 
-        // Redirect to home page
+        if (isAdmin) {
+          // Redirect to admin dashboard
+          this.$router.push('/admin/dashboard');
+          return;
+        }
+        else {
         this.$router.push('/');
+        }
       } catch (error) {
         console.error('Login error:', error);
         this.errorMessage = error.message || 'Login failed. Please check your credentials.';
@@ -78,7 +85,6 @@ export default {
   display: flex;
   flex-direction: column;
   background-color: #e7e7e7;
-  min-height: 80vh;
 }
 
 .auth-content {
