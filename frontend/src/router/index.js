@@ -5,6 +5,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import ProductsView from '../views/ProductsView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import LoginView from '@/views/LoginView.vue'
+import { authGuard } from '@/auth/guard/guard'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -12,32 +14,38 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+      meta: { requiresAuth: false }
     },
     {
       path: '/about',
       name: 'about',
       component: AboutView,
+      meta: { requiresAuth: false }
     },
     {
       path: '/category/:id',
       name: 'category-products',
       component: CategoryProductsView,
       props: true,
+      meta: { requiresAuth: false }
     },
     {
       path: '/products',
       name: 'products',
       component: ProductsView,
+      meta: { requiresAuth: false }
     },
     {
       path: '/register',
       name: 'register',
       component: RegisterView,
+      meta: { guestOnly: true }
     },
     {
       path: '/login',
       name: 'login',
       component: LoginView,
+      meta: { guestOnly: true }
     },
   ],
   scrollBehavior(to, from, savedPosition) {
@@ -48,4 +56,7 @@ const router = createRouter({
     return { top: 0, behavior: 'smooth' }
   },
 })
+
+router.beforeEach(authGuard);
+
 export default router

@@ -1,9 +1,9 @@
 <template>
-  <div class="register-container">
-    <div class="register-content">
+  <div class="auth-container">
+    <div class="auth-content">
       <div class="banner-section">
         <div class="banner-card">
-            <img src="../assets/authposter.png" alt="Promo Banner" class="promo-img" />
+          <img src="../assets/authposter.png" alt="Promo Banner" class="promo-img" />
         </div>
       </div>
 
@@ -12,18 +12,23 @@
           <h2>Create an account</h2>
           <p class="subtitle">Enter your details below</p>
 
+          <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+          <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
+
           <form @submit.prevent="handleRegister">
             <div class="input-group">
-              <input type="text" placeholder="Name" v-model="form.name" />
+              <input type="text" placeholder="Name" v-model="form.name" required />
             </div>
             <div class="input-group">
-              <input type="text" placeholder="Email or Phone Number" v-model="form.email" />
+              <input type="email" placeholder="Email or Phone Number" v-model="form.email" required />
             </div>
             <div class="input-group">
-              <input type="password" placeholder="Password" v-model="form.password" />
+              <input type="password" placeholder="Password" v-model="form.password" required minlength="6" />
             </div>
 
-            <button type="submit" class="btn-primary">Create Account</button>
+            <button type="submit" class="btn-primary" :disabled="loading">
+              {{ loading ? 'Creating Account...' : 'Create Account' }}
+            </button>
 
             <button type="button" class="btn-google">
               <img src="../assets/icon/goo.png" alt="Google" class="goo-icon" />
@@ -32,7 +37,7 @@
           </form>
 
           <p class="login-redirect">
-            Already have account? <RouterLink to="/login">Log in</RouterLink>
+            Already have account? <RouterLink to="/login" class="link-black">Log in</RouterLink>
           </p>
         </div>
       </div>
@@ -41,6 +46,7 @@
 </template>
 
 <script>
+import authService from '../auth/auth.service.js';
 export default {
   name: 'RegisterView',
   data() {
@@ -49,34 +55,53 @@ export default {
         name: '',
         email: '',
         password: ''
-      }
+      },
+      loading: false,
+      errorMessage: '',
+      successMessage: ''
     }
   },
   methods: {
-    handleRegister() {
-      console.log('Registering:', this.form);
+    async handleRegister() {
+      this.errorMessage = '';
+      this.successMessage = '';
+      this.loading = true;
+
+      try {
+        await authService.register(this.form);
+
+        this.successMessage = 'Account created successfully! Redirecting to login...';
+
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          this.$router.push('/login');
+        }, 2000);
+      } catch (error) {
+        this.errorMessage = error.message || 'Registration failed. Please try again.';
+        console.error('Registration error:', error);
+      } finally {
+        this.loading = false;
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-.register-container {
+.auth-container {
   display: flex;
   flex-direction: column;
   background-color: #e7e7e7;
-  position: relative;
-  overflow: hidden;
+  min-height: 80vh;
 }
 
-.register-content {
+.auth-content {
   display: flex;
-  max-width: 1200px;
-  margin: 60px auto;
+  max-width: 1100px;
+  margin: 80px auto;
   width: 100%;
   padding: 0 20px;
   align-items: center;
-  z-index: 2;
 }
 
 .banner-section {
@@ -86,12 +111,11 @@ export default {
 }
 
 .banner-card {
-  position: relative;
   width: 100%;
   max-width: 500px;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
 }
 
 .promo-img {
@@ -101,7 +125,7 @@ export default {
 
 .form-section {
   flex: 1;
-  padding-left: 80px;
+  padding-left: 60px;
 }
 
 .form-wrapper {
@@ -128,9 +152,10 @@ input {
   width: 100%;
   border: none;
   border-bottom: 1px solid #ccc;
-  padding: 10px 0;
+  padding: 12px 0;
   font-size: 16px;
   outline: none;
+  background: transparent;
   transition: border-color 0.3s;
 }
 
@@ -152,10 +177,6 @@ input:focus {
   transition: background 0.3s;
 }
 
-.btn-primary:hover {
-  background-color: #0077ee;
-}
-
 .btn-google {
   width: 100%;
   background-color: transparent;
@@ -168,13 +189,9 @@ input:focus {
   justify-content: center;
   gap: 10px;
   cursor: pointer;
-  font-size: 16px;
 }
 
-.goo-icon {
-  width: 26px;
-  height: 26px;
-}
+.goo-icon { width: 24px; }
 
 .login-redirect {
   margin-top: 30px;
@@ -183,36 +200,25 @@ input:focus {
   color: #666;
 }
 
-.login-redirect a {
+.link-black {
   color: #000;
   font-weight: 600;
   text-decoration: underline;
 }
 
-.skyline-footer {
-    width: 100%;
-    margin-top: auto;
-    line-height: 0;
+.error-message, .success-message {
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
 }
 
-.skyline-footer img {
-    width: 100%;
-    height: auto;
-    opacity: 0.9;
-}
+.error-message { background: #fee; color: #c33; border-left: 4px solid #c33; }
+.success-message { background: #efe; color: #3c3; border-left: 4px solid #3c3; }
 
 @media (max-width: 992px) {
-  .register-content {
-    flex-direction: column;
-    margin: 30px auto;
-  }
-  .form-section {
-    padding-left: 0;
-    margin-top: 40px;
-    width: 100%;
-  }
-  .banner-section {
-      display: none; /* Hide banner on smaller mobile screens if space is tight */
-  }
+  .auth-content { flex-direction: column; margin: 40px auto; }
+  .form-section { padding-left: 0; margin-top: 40px; }
+  .banner-section { display: none; }
 }
 </style>

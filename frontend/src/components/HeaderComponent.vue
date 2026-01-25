@@ -29,11 +29,40 @@
             <img src="../assets/cart.png" />
             <span>Cart</span>
           </div>
-          <div class="button-item">
-            <RouterLink to="/register" class="button" style="text-decoration: none;">
+
+          <!-- Show Account button if NOT logged in -->
+          <div v-if="!isLoggedIn" class="button-item">
+            <RouterLink to="/login" class="button" style="text-decoration: none;">
               <img src="../assets/acc.png" />
               <span>Account</span>
             </RouterLink>
+          </div>
+
+          <!-- Show User menu if logged in -->
+          <div v-else class="user-menu">
+            <div class="user-info" @click="toggleDropdown">
+              <img src="../assets/acc.png" />
+              <span>{{ user?.firstName || 'User' }}</span>
+              <span class="dropdown-arrow">▼</span>
+            </div>
+
+            <!-- Dropdown menu -->
+            <div v-if="showDropdown" class="dropdown">
+              <div class="dropdown-item">
+                <span class="user-email">{{ user?.email }}</span>
+              </div>
+              <hr />
+              <RouterLink to="" class="dropdown-item" @click="closeDropdown">
+                Profile
+              </RouterLink>
+              <RouterLink to="" class="dropdown-item" @click="closeDropdown">
+                My Orders
+              </RouterLink>
+              <hr />
+              <div class="dropdown-item logout" @click="handleLogout">
+                Logout
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -42,10 +71,55 @@
 </template>
 
 <script>
+import authService from '@/auth/auth.service';
+
 export default {
   name: 'HeaderComponent',
-  components: {
+  data() {
+    return {
+      isLoggedIn: false,
+      user: null,
+      showDropdown: false
+    }
   },
+  mounted() {
+    this.checkAuth();
+    // Listen for storage changes (when user logs in/out in another tab)
+    window.addEventListener('storage', this.checkAuth);
+  },
+  beforeUnmount() {
+    window.removeEventListener('storage', this.checkAuth);
+  },
+  methods: {
+    checkAuth() {
+      this.isLoggedIn = authService.isAuthenticated();
+      this.user = authService.getCurrentUser();
+    },
+    toggleDropdown() {
+      this.showDropdown = !this.showDropdown;
+    },
+    closeDropdown() {
+      this.showDropdown = false;
+    },
+    async handleLogout() {
+      try {
+        await authService.logout();
+        this.isLoggedIn = false;
+        this.user = null;
+        this.showDropdown = false;
+        this.$router.push('/login');
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    }
+  },
+  watch: {
+    $route() {
+      // Re-check auth when route changes (after login/logout)
+      this.checkAuth();
+      this.closeDropdown();
+    }
+  }
 }
 </script>
 
@@ -60,10 +134,8 @@ export default {
 
 .router-link-active {
   color: #0d6efd !important;
-  /* The Blue Color */
   font-weight: bold;
   border-bottom: 2px solid #0d6efd;
-  /* Optional: Adds a little underline */
 }
 
 .top-header {
@@ -96,7 +168,6 @@ export default {
   display: flex;
   align-items: center;
   gap: 25px;
-  /* padding: 20px 0; */
   font-size: 16px;
   font-weight: 500;
 }
@@ -136,7 +207,6 @@ export default {
   transition: all 0.2s ease;
 }
 
-
 .menu-item:hover {
   color: #0990ff;
 }
@@ -151,8 +221,87 @@ export default {
   height: 18px;
 }
 
-.menu-item.cart {
+/* User menu styles */
+.user-menu {
   position: relative;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 8px 12px;
+  background-color: #0990ff;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px #066bbd;
+  transition: all 0.2s ease;
+}
+
+.user-info:active {
+  box-shadow: 0 2px #066bbd;
+  transform: translateY(2px);
+}
+
+.user-info img {
+  width: 18px;
+  height: 18px;
+}
+
+.dropdown-arrow {
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  overflow: hidden;
+  z-index: 1001;
+}
+
+.dropdown-item {
+  padding: 12px 16px;
+  color: #253d4e;
+  text-decoration: none;
+  display: block;
+  transition: background 0.2s ease;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.user-email {
+  color: #666;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.dropdown hr {
+  margin: 0;
+  border: none;
+  border-top: 1px solid #ececec;
+}
+
+.dropdown-item.logout {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.dropdown-item.logout:hover {
+  background-color: #fff5f5;
 }
 
 @media (max-width: 968px) {
@@ -175,9 +324,7 @@ export default {
     width: 32px;
     height: 32px;
   }
-}
 
-@media (max-width: 768px) {
   .top-menu-bar {
     gap: 15px;
   }
@@ -188,6 +335,14 @@ export default {
 
   .menu-item {
     gap: 0;
+  }
+
+  .user-info span:first-of-type {
+    display: none; /* Hide username on mobile */
+  }
+
+  .dropdown {
+    right: -10px;
   }
 }
 </style>

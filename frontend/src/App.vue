@@ -5,7 +5,7 @@ export default {
   name: 'App',
   components: {
     HeaderComponent,
-    FooterComponent,  
+    FooterComponent,
   },
 }
 </script>
@@ -33,6 +33,15 @@ body {
 #app {
   width: 100%;
   min-height: 100vh;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 /* .home {
