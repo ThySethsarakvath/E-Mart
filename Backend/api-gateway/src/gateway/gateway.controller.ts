@@ -14,6 +14,7 @@ export class GatewayController {
   async authRoutes(@Req() req: Request, @Res() res: Response) {
     try {
       console.log(`[Gateway] Received ${req.method} ${req.url}`);
+      console.log(`[Gateway] Authorization header:`, req.headers.authorization);
       const startTime = Date.now();
 
       const path = req.url.replace('/api', '');
@@ -42,7 +43,6 @@ export class GatewayController {
         .json({ message, error: error.error || 'Error' });
     }
   }
-
   @All('products')
   @All('products/*')
   async productRoutes(@Req() req: Request, @Res() res: Response) {

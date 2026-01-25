@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/only-throw-error */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -6,6 +7,7 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
+import { AxiosRequestConfig } from 'axios';
 
 @Injectable()
 export class ProxyService {
@@ -17,9 +19,11 @@ export class ProxyService {
     private configService: ConfigService,
   ) {
     this.ORDER_WORKER_URL =
-      this.configService.get('ORDER_WORKER_URL') || 'http://order-worker:3000';
+      this.configService.get('ORDER_WORKER_URL') ||
+      'http://e-mart-order-worker-1:3000';
     this.AUTH_SERVICE_URL =
-      this.configService.get('AUTH_SERVICE_URL') || 'http://auth-service:3000';
+      this.configService.get('AUTH_SERVICE_URL') ||
+      'http://e-mart-auth-service-1:3000';
   }
 
   async forwardRequest(
@@ -36,17 +40,17 @@ export class ProxyService {
         : this.AUTH_SERVICE_URL;
     const url = `${baseUrl}${path}`;
 
-    const config: any = {
-      method,
+    const cleanHeaders = { ...headers };
+    delete cleanHeaders['host'];
+    delete cleanHeaders['connection'];
+    delete cleanHeaders['content-length'];
+
+    const config: AxiosRequestConfig = {
+      method: method as any,
       url,
-      headers: {
-        ...headers,
-        host: undefined,
-      },
+      headers: cleanHeaders,
       params: query,
-      timeout: 30000,
-      maxRedirects: 5,
-      validateStatus: () => true,
+      timeout: 10000,
     };
 
     if (body && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
@@ -55,6 +59,7 @@ export class ProxyService {
 
     try {
       console.log(`[ProxyService] Forwarding ${method} ${url}`);
+      console.log(`[ProxyService] Headers:`, cleanHeaders); // Debug log
       const startTime = Date.now();
 
       const response = await firstValueFrom(this.httpService.request(config));
@@ -64,8 +69,16 @@ export class ProxyService {
       );
       return response.data;
     } catch (error) {
-      console.error(`[ProxyService] Error forwarding request:`, error.message);
-      throw error.response?.data || error.message;
+      console.error(`[ProxyService] Error:`, error.message);
+      console.error(
+        `[ProxyService] Error details:`,
+        error.response?.data || error,
+      );
+      throw {
+        status: error.response?.status || 500,
+        message: error.response?.data?.message || error.message,
+        error: error.response?.data || 'Internal server error',
+      };
     }
   }
 }
