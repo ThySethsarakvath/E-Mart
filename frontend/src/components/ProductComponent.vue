@@ -10,8 +10,8 @@ const props = defineProps({
 
 const imageUrl = computed(() => {
   if (!props.product.imagePath) return 'https://via.placeholder.com/200?text=No+Image';
-  // Pointing to port 4000 as per your setup
-  return `http://localhost:4000/uploads/products/${props.product.imagePath}`;
+  // Pointing to port 4001 as per your setup
+  return `http://localhost:4001/uploads/products/${props.product.imagePath}`;
 });
 
 const formattedPrice = computed(() => {

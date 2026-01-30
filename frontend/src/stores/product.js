@@ -15,11 +15,11 @@ export const useProductStore = defineStore('product', {
       try {
         const [bannersResponse, promotionResponse, categoryResponse, arrivalsResponse, productsResponse] =
         await Promise.all([
-          axios.get('http://localhost:4000/banners'),
-          axios.get('http://localhost:4000/promotions'),
-          axios.get('http://localhost:4000/categories'),
-          axios.get('http://localhost:4000/arrivals'),
-          axios.get('http://localhost:4000/products'),
+          axios.get('http://localhost:4001/banners'),
+          axios.get('http://localhost:4001/promotions'),
+          axios.get('http://localhost:4001/categories'),
+          axios.get('http://localhost:4001/arrivals'),
+          axios.get('http://localhost:4001/products'),
         ])
         this.banners = bannersResponse.data;
         this.promotions = promotionResponse.data;

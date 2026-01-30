@@ -7,8 +7,17 @@ import { PromotionsModule } from './promotions/promotions.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ArrivalsModule } from './arrivals/arrivals.module';
 import { ProductsModule } from './products/products.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
 @Module({
   imports: [
+    
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'), 
+      serveRoot: '/uploads',                     
+    }),
+
     BannersModule,
     PromotionsModule,
     CategoriesModule,
@@ -16,7 +25,7 @@ import { ProductsModule } from './products/products.module';
     ProductsModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'postgres',
+      host: 'emart-db',
       port: 5432,
       username: 'postgres',
       password: 'postgres',

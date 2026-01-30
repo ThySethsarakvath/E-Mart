@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { join } from 'path';
 import { mkdirSync } from 'fs';
 import { ValidationPipe } from '@nestjs/common';
-
+import { NestExpressApplication } from '@nestjs/platform-express';
 async function bootstrap() {
   try {
     mkdirSync('./uploads/banners', { recursive: true });

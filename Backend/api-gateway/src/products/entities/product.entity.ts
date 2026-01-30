@@ -1,5 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Categories } from '../../categories/entities/categories.entity';
+import { SubCategory } from '../../categories/entities/subcategory.entity';
+
 @Entity('products')
 export class Product {
   @PrimaryGeneratedColumn()
@@ -8,8 +10,8 @@ export class Product {
   @Column()
   name: string;
 
-  @Column('text')
-  description: string;
+  @Column('text', { nullable: true })
+  description: string;  // <--- Added this back
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
@@ -22,10 +24,18 @@ export class Product {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
   @ManyToOne(() => Categories, (category) => category.products, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'categoryId' })
   category: Categories;
 
   @Column({ nullable: true })
   categoryId: number;
+
+  @ManyToOne(() => SubCategory, (subCategory) => subCategory.products, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'subCategoryId' })
+  subCategory: SubCategory;
+
+  @Column({ nullable: true })
+  subCategoryId: number;
 }
