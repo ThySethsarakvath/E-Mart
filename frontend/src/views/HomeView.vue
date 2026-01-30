@@ -6,6 +6,7 @@ import PromotionComponent from '@/components/PromotionComponent.vue';
 import ValuePropsComponent from '@/components/ValuePropsComponent.vue';
 import CategoriesComponent from '@/components/CategoriesComponent.vue';
 import ArrivalsComponent from '@/components/ArrivalsComponent.vue';
+import ProductComponent from '@/components/ProductComponent.vue';
 export default {
   name: 'HomeView',
   components: {
@@ -14,7 +15,8 @@ export default {
     PromotionComponent,
     ValuePropsComponent,
     CategoriesComponent,
-    ArrivalsComponent
+    ArrivalsComponent,
+    ProductComponent
   },
   setup() {
     const productStore = useProductStore();
@@ -62,7 +64,22 @@ export default {
       <div class="categories-grid">
         <CategoriesComponent v-for="category in productStore.categories" :key="category.id" :category="category" />
       </div>
-
+      <div class="products-section" style="width: 100%; margin-top: 50px;">
+        <div class="section-header">
+          <div class="semi-wrapper">
+            <div class="block"></div>
+            <span class="minor-label">Our Products</span>
+          </div>
+          <h2 class="section-title">Explore Products</h2>
+        </div>
+        <div class="promotions-grid"> 
+          <ProductComponent 
+            v-for="product in productStore.products" 
+            :key="product.id" 
+            :product="product" 
+          />
+        </div>
+      </div>
       <div class="arrivals-section">
         <div class="section-header">
           <div class="semi-wrapper">

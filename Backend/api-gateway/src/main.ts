@@ -4,6 +4,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+<<<<<<< HEAD
 import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
@@ -32,5 +33,35 @@ async function bootstrap() {
   server.setTimeout(60000);
 
   console.log(`API Gateway is running on: ${await app.getUrl()}`);
+=======
+import { join } from 'path';
+import { mkdirSync } from 'fs';
+import { ValidationPipe } from '@nestjs/common';
+
+async function bootstrap() {
+  try {
+    mkdirSync('./uploads/banners', { recursive: true });
+    mkdirSync('./uploads/promotions', { recursive: true });
+    mkdirSync('./uploads/categories', { recursive: true });
+    mkdirSync('./uploads/arrivals', { recursive: true });
+    mkdirSync('./uploads/products', { recursive: true });
+  } catch (error) {
+    // Directory already exists
+  }
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.enableCors({
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    credentials: true,
+  });
+
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
+  
+  await app.listen(process.env.PORT ?? 3000);
+>>>>>>> sitha-feature
 }
 bootstrap();
