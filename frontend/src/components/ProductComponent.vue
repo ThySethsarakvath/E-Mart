@@ -91,6 +91,7 @@ const starRating = computed(() => {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   width: 100%;
+  max-width: 280px;
   display: flex;
   flex-direction: column; 
 }

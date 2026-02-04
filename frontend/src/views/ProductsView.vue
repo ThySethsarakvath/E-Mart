@@ -180,29 +180,11 @@ onMounted(async () => {
 }
 
 .products-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr); 
+  display: flex;
+  flex-wrap: wrap;
   gap: 20px;
 }
 
-
-@media (max-width: 1200px) {
-  .products-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (max-width: 992px) {
-  .products-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
 .no-items {
   color: #888;
   font-style: italic;
