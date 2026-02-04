@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+=======
+>>>>>>> sitha-feature
 import {
   Controller,
   Get,
