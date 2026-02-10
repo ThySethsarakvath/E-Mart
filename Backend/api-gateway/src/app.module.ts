@@ -4,8 +4,8 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { AuthModule } from './auth/auth.module';
-import { GatewayController } from './gateway/gateway.controller';
 import { ProxyService } from './proxy/proxy.service';
+import { GatewayController } from './gateway/gateway.controller';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { ProxyService } from './proxy/proxy.service';
     HttpModule,
     AuthModule,
   ],
-  controllers: [GatewayController, AppController],
+  controllers: [AppController, GatewayController],
   providers: [ProxyService, AppService],
 })
 export class AppModule {}
