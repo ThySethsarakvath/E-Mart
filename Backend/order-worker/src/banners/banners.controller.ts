@@ -19,6 +19,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { BannersService } from './banners.service';
+import { CreateBannerDto } from './dto/create-banner.dto';
+import { UpdateBannerDto } from './dto/update-banner.dto';
 
 @Controller('banners')
 export class BannersController {
@@ -41,12 +43,11 @@ export class BannersController {
       }),
     }),
   )
-  create(@Body() body: any, @UploadedFile() file: any) {
-    return this.bannersService.create({
-      title: body.title,
-      subtitle: body.subtitle,
-      image: file,
-    });
+  create(
+    @Body() body: CreateBannerDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.bannersService.create(body, file);
   }
 
   @Patch(':id')
@@ -63,18 +64,16 @@ export class BannersController {
   )
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: any,
-    @UploadedFile() file?: any,
+    @Body() body: UpdateBannerDto,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.bannersService.update(id, {
-      title: body.title,
-      subtitle: body.subtitle,
-      image: file,
-    });
+    console.log('PATCH HIT IN ORDER WORKER', id);
+    return this.bannersService.update(id, body, file);
   }
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
+    console.log('DELETE HIT IN ORDER WORKER', id);
     return this.bannersService.remove(id);
   }
 }

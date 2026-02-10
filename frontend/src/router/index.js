@@ -8,6 +8,7 @@ import LoginView from '@/views/LoginView.vue'
 import { authGuard } from '@/auth/guard/guard'
 import AdminLayout from '@/views/AdminLayout.vue'
 import DashboardComponent from '@/components/admin/DashboardComponent.vue'
+import AdminBanner from '@/components/admin/AdminBanner.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -63,7 +64,12 @@ const router = createRouter({
           path: 'dashboard',
           name: 'admin-dashboard',
           component: DashboardComponent,
-        }
+        },
+        {
+          path: 'banners',
+          name: 'admin-banners',
+          component: () => AdminBanner,
+        },
       ]
     }
   ],

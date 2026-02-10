@@ -16,7 +16,6 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
       transform: true,
     }),
   );
@@ -27,8 +26,6 @@ async function bootstrap() {
   });
 
   const server = await app.listen(3000);
-
-  // Increase server timeout to 60 seconds
   server.setTimeout(60000);
 
   console.log(`API Gateway is running on: ${await app.getUrl()}`);

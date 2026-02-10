@@ -4,9 +4,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Banner } from './banner.entity';
+import { Banner } from './entity/banner.entity';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
+import { CreateBannerDto } from './dto/create-banner.dto';
+import { UpdateBannerDto } from './dto/update-banner.dto';
 
 @Injectable()
 export class BannersService {
@@ -19,11 +21,11 @@ export class BannersService {
     return this.bannerRepo.find();
   }
 
-  async create(data: any) {
+  async create(dto: CreateBannerDto, file: Express.Multer.File) {
     const banner = this.bannerRepo.create({
-      title: data.title,
-      subtitle: data.subtitle,
-      imagePath: data.image.filename,
+      title: dto.title,
+      subtitle: dto.subtitle,
+      imagePath: file.filename,
     });
 
     return {
@@ -32,31 +34,31 @@ export class BannersService {
     };
   }
 
-  async update(id: number, data: any) {
+  async update(id: number, dto: UpdateBannerDto, file?: Express.Multer.File) {
     const banner = await this.bannerRepo.findOne({ where: { id } });
 
     if (!banner) {
       throw new NotFoundException(`Banner with ID ${id} not found`);
     }
 
-    // Update fields if provided
-    if (data.title) {
-      banner.title = data.title;
+    // Update text fields from the DTO
+    if (dto.title) {
+      banner.title = dto.title;
     }
-    if (data.subtitle) {
-      banner.subtitle = data.subtitle;
+    if (dto.subtitle) {
+      banner.subtitle = dto.subtitle;
     }
 
-    // If new image is uploaded, delete old image and update path
-    if (data.image) {
-      // Delete old image file
+    // Update image if a new one was uploaded
+    if (file) {
       try {
         await unlink(join('./uploads/banners', banner.imagePath));
       } catch (error) {
-        // Ignore error if file doesn't exist
+        // Logic remains the same: ignore if file is missing
       }
-      banner.imagePath = data.image.filename;
+      banner.imagePath = file.filename;
     }
+
     return {
       message: 'Banner updated successfully',
       banner: await this.bannerRepo.save(banner),

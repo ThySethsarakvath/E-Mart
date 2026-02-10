@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/only-throw-error */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -8,6 +9,7 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { AxiosRequestConfig } from 'axios';
+import type { Request } from 'express';
 
 @Injectable()
 export class ProxyService {
@@ -33,6 +35,7 @@ export class ProxyService {
     headers: any,
     body?: any,
     query?: any,
+    rawRequest?: Request, // Add raw request parameter
   ) {
     const baseUrl =
       service === 'order-worker'
@@ -43,23 +46,40 @@ export class ProxyService {
     const cleanHeaders = { ...headers };
     delete cleanHeaders['host'];
     delete cleanHeaders['connection'];
-    delete cleanHeaders['content-length'];
+    if (!headers['content-type']?.includes('multipart/form-data')) {
+      delete cleanHeaders['content-length'];
+    }
 
     const config: AxiosRequestConfig = {
       method: method as any,
       url,
       headers: cleanHeaders,
       params: query,
-      timeout: 10000,
+      timeout: 30000,
     };
 
-    if (body && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
+    console.log('Forwarding:', {
+      method,
+      url,
+      headers: cleanHeaders,
+      hasBody: !!config.data,
+    });
+
+    const isMultipart = headers['content-type']?.includes(
+      'multipart/form-data',
+    );
+
+    if (isMultipart && rawRequest) {
+      config.data = rawRequest;
+      config.maxBodyLength = Infinity;
+      config.maxContentLength = Infinity;
+    } else if (['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
       config.data = body;
     }
 
     try {
       console.log(`[ProxyService] Forwarding ${method} ${url}`);
-      console.log(`[ProxyService] Headers:`, cleanHeaders); // Debug log
+      console.log(`[ProxyService] Is multipart:`, isMultipart);
       const startTime = Date.now();
 
       const response = await firstValueFrom(this.httpService.request(config));
@@ -69,15 +89,13 @@ export class ProxyService {
       );
       return response.data;
     } catch (error) {
-      console.error(`[ProxyService] Error:`, error.message);
-      console.error(
-        `[ProxyService] Error details:`,
-        error.response?.data || error,
-      );
+      const err = error as any;
+      console.error(`[ProxyService] Error:`, err.message);
+      console.error(`[ProxyService] Error details:`, err.response?.data || err);
       throw {
-        status: error.response?.status || 500,
-        message: error.response?.data?.message || error.message,
-        error: error.response?.data || 'Internal server error',
+        status: err.response?.status || 500,
+        message: err.response?.data?.message || err.message,
+        error: err.response?.data || 'Internal server error',
       };
     }
   }
