@@ -9,6 +9,10 @@ import { authGuard } from '@/auth/guard/guard'
 import AdminLayout from '@/views/AdminLayout.vue'
 import DashboardComponent from '@/components/admin/DashboardComponent.vue'
 import AdminBanner from '@/components/admin/AdminBanner.vue'
+import AdminNewArrival from '@/components/admin/AdminNewArrival.vue'
+import AdminCategory from '@/components/admin/AdminCategory.vue'
+import AdminProduct from '@/components/admin/AdminProduct.vue'
+import AdminPromotion from '@/components/admin/AdminPromotion.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -70,6 +74,26 @@ const router = createRouter({
           name: 'admin-banners',
           component: () => AdminBanner,
         },
+        {
+          path: 'arrivals',
+          name: 'admin-arrivals',
+          component: () => AdminNewArrival,
+        },
+        {
+          path: 'categories',
+          name: 'admin-categories',
+          component: () => AdminCategory,
+        },
+        {
+          path: 'products',
+          name: 'admin-products',
+          component: () => AdminProduct,
+        },
+        {
+          path: 'promotions',
+          name: 'admin-promotions',
+          component: () => AdminPromotion,
+        }
       ]
     }
   ],
