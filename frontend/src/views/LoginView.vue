@@ -37,6 +37,7 @@
 
 <script>
 import authService from '../auth/auth.service.js';
+import cartService from '../service/cart.js';
 
 export default {
   name: 'LoginView',
@@ -56,19 +57,50 @@ export default {
       this.loading = true;
 
       try {
+        
         const response = await authService.login(this.form);
+        const userData = response.user;
         const isAdmin = authService.isAdmin();
 
-        console.log('Login successful:', response.user);
+        console.log('Login successful:', userData);
 
+        
+        const guestCartStr = localStorage.getItem('cart_items_guest');
+        const guestItems = guestCartStr ? JSON.parse(guestCartStr) : [];
+
+        if (guestItems.length > 0 && userData && userData.id) {
+          const userKey = `cart_items_${userData.id}`;
+          const userCartStr = localStorage.getItem(userKey);
+          let userItems = userCartStr ? JSON.parse(userCartStr) : [];
+
+         
+          guestItems.forEach(guestItem => {
+            const existing = userItems.find(u => u.id === guestItem.id);
+            if (existing) {
+              existing.quantity += guestItem.quantity;
+            } else {
+              userItems.push(guestItem);
+            }
+          });
+
+          
+          localStorage.setItem(userKey, JSON.stringify(userItems));
+          
+         
+          localStorage.removeItem('cart_items_guest');
+        }
+
+        
+        cartService.reloadCart();
+        
+
+        
         if (isAdmin) {
-          // Redirect to admin dashboard
           this.$router.push('/admin/dashboard');
-          return;
+        } else {
+          this.$router.push('/');
         }
-        else {
-        this.$router.push('/');
-        }
+        
       } catch (error) {
         console.error('Login error:', error);
         this.errorMessage = error.message || 'Login failed. Please check your credentials.';
@@ -89,12 +121,12 @@ export default {
 
 .auth-content {
   display: flex;
-  max-width: 1100px; /* Unified width */
+  max-width: 1100px;
   margin: 80px auto;
   width: 100%;
   padding: 0 20px;
   align-items: center;
-  gap: 0; /* Let flex handle spacing */
+  gap: 0;
 }
 
 .banner-section {
@@ -119,7 +151,7 @@ export default {
 
 .form-section {
   flex: 1;
-  padding-left: 60px; /* Consistent spacing */
+  padding-left: 60px;
 }
 
 .form-wrapper {

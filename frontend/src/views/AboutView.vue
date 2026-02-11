@@ -1,6 +1,11 @@
 <script>
+import BreadcrumbComponent from '@/components/BreadcrumbComponent.vue';
+
 export default {
-  name: 'AboutView'
+  name: 'AboutView',
+  components: {
+    BreadcrumbComponent
+  }
 }
 </script>
 
@@ -17,6 +22,8 @@ export default {
   </div>
 
   <div class="about-container">
+    <BreadcrumbComponent />
+
     <div class="about-section">
       <h1>About Us</h1>
       <p>
