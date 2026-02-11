@@ -23,6 +23,7 @@ export class ProxyService {
     this.ORDER_WORKER_URL =
       this.configService.get('ORDER_WORKER_URL') ||
       'http://e-mart-order-worker-1:3000';
+
     this.AUTH_SERVICE_URL =
       this.configService.get('AUTH_SERVICE_URL') ||
       'http://e-mart-auth-service-1:3000';
@@ -35,67 +36,50 @@ export class ProxyService {
     headers: any,
     body?: any,
     query?: any,
-    rawRequest?: Request, // Add raw request parameter
+    rawRequest?: Request,
   ) {
     const baseUrl =
       service === 'order-worker'
         ? this.ORDER_WORKER_URL
         : this.AUTH_SERVICE_URL;
+
     const url = `${baseUrl}${path}`;
 
     const cleanHeaders = { ...headers };
-    delete cleanHeaders['host'];
-    delete cleanHeaders['connection'];
-    if (!headers['content-type']?.includes('multipart/form-data')) {
-      delete cleanHeaders['content-length'];
-    }
+    delete cleanHeaders.host;
+    delete cleanHeaders.connection;
+    delete cleanHeaders['content-length']; // ALWAYS remov
+
+    const isMultipart = headers['content-type']?.includes(
+      'multipart/form-data',
+    );
 
     const config: AxiosRequestConfig = {
       method: method as any,
       url,
       headers: cleanHeaders,
       params: query,
+      responseType: 'json',
       timeout: 30000,
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
     };
 
-    console.log('Forwarding:', {
-      method,
-      url,
-      headers: cleanHeaders,
-      hasBody: !!config.data,
-    });
-
-    const isMultipart = headers['content-type']?.includes(
-      'multipart/form-data',
-    );
-
     if (isMultipart && rawRequest) {
+      // ✅ stream directly
       config.data = rawRequest;
-      config.maxBodyLength = Infinity;
-      config.maxContentLength = Infinity;
     } else if (['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
       config.data = body;
     }
 
     try {
-      console.log(`[ProxyService] Forwarding ${method} ${url}`);
-      console.log(`[ProxyService] Is multipart:`, isMultipart);
-      const startTime = Date.now();
-
       const response = await firstValueFrom(this.httpService.request(config));
-
-      console.log(
-        `[ProxyService] Response received in ${Date.now() - startTime}ms (Status: ${response.status})`,
-      );
       return response.data;
-    } catch (error) {
-      const err = error as any;
-      console.error(`[ProxyService] Error:`, err.message);
-      console.error(`[ProxyService] Error details:`, err.response?.data || err);
+    } catch (err: any) {
       throw {
         status: err.response?.status || 500,
         message: err.response?.data?.message || err.message,
-        error: err.response?.data || 'Internal server error',
+        error: err.response?.data,
       };
     }
   }

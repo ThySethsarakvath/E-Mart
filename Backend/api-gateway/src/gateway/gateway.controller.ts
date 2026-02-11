@@ -31,7 +31,8 @@ export class GatewayController {
         path.startsWith('/banners') ||
         path.startsWith('/arrivals') ||
         path.startsWith('/promotions') ||
-        path.startsWith('/orders')
+        path.startsWith('/orders') ||
+        path.startsWith('/categories')
       ) {
         service = 'order-worker';
       } else {

@@ -18,9 +18,10 @@ export class CategoriesService {
     private readonly subCategoriesRepo: Repository<SubCategory>,
   ) {}
 
-  
-
-  async create(dto: CreateCategoriesDto, imagePath: string): Promise<Categories> {
+  async create(
+    dto: CreateCategoriesDto,
+    imagePath: string,
+  ): Promise<Categories> {
     const categories = this.categoriesRepo.create({
       name: dto.name,
       imagePath,
@@ -74,11 +75,9 @@ export class CategoriesService {
     return this.categoriesRepo.remove(category);
   }
 
- 
-
   async createSubCategory(name: string, categoryId: number) {
     const parentCategory = await this.categoriesRepo.findOne({
-      where: { id: categoryId }
+      where: { id: categoryId },
     });
 
     if (!parentCategory) {
@@ -94,30 +93,27 @@ export class CategoriesService {
     return this.subCategoriesRepo.save(subCategory);
   }
 
-
   async findAllSubCategories() {
     return this.subCategoriesRepo.find({
       relations: ['category'], // Load parent info
     });
   }
 
-  
   async findOneSubCategory(id: number) {
     const sub = await this.subCategoriesRepo.findOne({
       where: { id },
       relations: ['category'],
     });
-    
+
     if (!sub) {
-       throw new NotFoundException(`SubCategory with ID ${id} not found`);
+      throw new NotFoundException(`SubCategory with ID ${id} not found`);
     }
     return sub;
   }
 
-  
   async removeSubCategory(id: number) {
     const sub = await this.subCategoriesRepo.findOne({ where: { id } });
-    
+
     if (!sub) {
       throw new NotFoundException(`SubCategory with ID ${id} not found`);
     }
