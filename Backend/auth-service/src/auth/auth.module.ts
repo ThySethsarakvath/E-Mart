@@ -13,6 +13,8 @@ import { Role } from '../entities/role.entity';
 import { Permission } from '../entities/permission.entity';
 import { UserRole } from '../entities/user-role.entity';
 import { RolePermission } from '../entities/role-permission.entity';
+import { UsersController } from 'src/users/user.controller';
+import { UsersService } from 'src/users/user.service';
 
 @Module({
   imports: [
@@ -34,8 +36,8 @@ import { RolePermission } from '../entities/role-permission.entity';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService, JwtModule],
+  controllers: [AuthController, UsersController],
+  providers: [AuthService, JwtStrategy, UsersService],
+  exports: [AuthService, JwtModule, UsersService],
 })
 export class AuthModule {}

@@ -27,7 +27,7 @@ export class GatewayController {
       // ===============================
       // AUTH ROUTES
       // ===============================
-      if (path.startsWith('/auth')) {
+      if (path.startsWith('/auth') || path.startsWith('/users')) {
         service = 'auth-service';
       }
 
