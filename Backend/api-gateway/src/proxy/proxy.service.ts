@@ -46,9 +46,10 @@ export class ProxyService {
     const url = `${baseUrl}${path}`;
 
     const cleanHeaders = { ...headers };
+
     delete cleanHeaders.host;
     delete cleanHeaders.connection;
-    delete cleanHeaders['content-length']; // ALWAYS remov
+    delete cleanHeaders['content-length']; // VERY IMPORTANT
 
     const isMultipart = headers['content-type']?.includes(
       'multipart/form-data',
@@ -59,14 +60,13 @@ export class ProxyService {
       url,
       headers: cleanHeaders,
       params: query,
-      responseType: 'json',
       timeout: 30000,
       maxBodyLength: Infinity,
       maxContentLength: Infinity,
     };
 
+    // ✅ stream multipart untouched
     if (isMultipart && rawRequest) {
-      // ✅ stream directly
       config.data = rawRequest;
     } else if (['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
       config.data = body;

@@ -1,10 +1,28 @@
 <template>
-  <div class="product-admin">
-    <div class="action-bar">
-      <div class="search-box">
-        <input v-model="searchQuery" type="text" placeholder="Search products..." />
+  <div class="admin-products">
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">Product Management</h2>
+        <p class="page-subtitle">Manage your product catalog and inventory</p>
       </div>
-      <button @click="openModal()" class="btn-primary">＋ Add New Product</button>
+      <div class="header-actions">
+        <span class="badge">{{ products.length }} Total</span>
+        <button @click="openModal()" class="btn-primary">
+          <span class="icon">+</span> Add New Product
+        </button>
+      </div>
+    </div>
+
+    <div class="search-section">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search products by name..."
+          class="search-input"
+        />
+      </div>
     </div>
 
     <div class="table-container">
@@ -12,7 +30,7 @@
         <thead>
           <tr>
             <th>Image</th>
-            <th>Name</th>
+            <th>Product Details</th>
             <th>Category</th>
             <th>Price</th>
             <th>Rating</th>
@@ -22,7 +40,13 @@
         <tbody>
           <tr v-for="product in filteredProducts" :key="product.id">
             <td>
-              <img :src="productService.getProductImageUrl(product.imagePath)" class="table-img" />
+              <div class="image-wrapper">
+                <img
+                  :src="productService.getProductImageUrl(product.imagePath)"
+                  :alt="product.name"
+                  class="table-img"
+                />
+              </div>
             </td>
             <td>
               <div class="product-info">
@@ -31,38 +55,106 @@
               </div>
             </td>
             <td>
-              <span class="badge">{{ product.category?.name }}</span>
-              <div v-if="product.subCategory" class="sub-badge">{{ product.subCategory?.name }}</div>
+              <span class="category-badge">{{ product.category?.name }}</span>
+              <div v-if="product.subCategory" class="sub-badge">
+                {{ product.subCategory?.name }}
+              </div>
             </td>
             <td class="price-cell">${{ product.price }}</td>
-            <td>⭐ {{ product.rating || 0 }}</td>
+            <td class="rating-cell">
+              <div>
+                <span class="star-icon">⭐</span>
+              {{ product.rating || 0 }}
+            </div>
+            </td>
             <td>
               <div class="actions">
-                <button @click="openModal(product)" class="btn-edit" title="Edit">✏️</button>
-                <button @click="confirmDelete(product.id)" class="btn-delete" title="Delete">🗑️</button>
+                <button @click="openModal(product)" class="btn-action edit" title="Edit">
+                  ✏️
+                </button>
+                <button @click="confirmDelete(product.id)" class="btn-action delete" title="Delete">
+                  🗑️
+                </button>
               </div>
             </td>
           </tr>
         </tbody>
       </table>
+
+      <div v-if="filteredProducts.length === 0" class="empty-state">
+        <div class="empty-icon">📦</div>
+        <p>No products found</p>
+        <p class="empty-hint">{{ searchQuery ? 'Try adjusting your search' : 'Add your first product to get started' }}</p>
+      </div>
     </div>
 
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal-content">
-        <h3>{{ isEditing ? 'Edit Product' : 'Create New Product' }}</h3>
-        <form @submit.prevent="handleSubmit">
+    <!-- Create/Edit Modal -->
+    <div v-if="showModal" class="modal-overlay" @click="closeModal">
+      <div class="modal-content large" @click.stop>
+        <div class="modal-header">
+          <h3>{{ isEditing ? 'Edit Product' : 'Create New Product' }}</h3>
+          <button @click="closeModal" class="btn-close">✕</button>
+        </div>
+
+        <form @submit.prevent="handleSubmit" class="modal-body">
+          <!-- Product Image Upload -->
+          <div class="form-group">
+            <label>Product Image <span class="required">*</span></label>
+            <div class="image-upload-area">
+              <div v-if="imagePreview" class="image-preview">
+                <img :src="imagePreview" alt="Preview" />
+                <button type="button" @click="removeImage" class="remove-image">
+                  ✕
+                </button>
+              </div>
+              <label v-else for="product-image-input" class="upload-placeholder">
+                <div class="upload-icon">📸</div>
+                <span>Click to upload product image</span>
+                <span class="upload-hint">Recommended size: 800x800px (Max 5MB)</span>
+              </label>
+              <input
+                id="product-image-input"
+                type="file"
+                accept="image/*"
+                @change="handleFileUpload"
+                style="display: none"
+                ref="fileInput"
+                :required="!isEditing"
+              />
+            </div>
+            <p v-if="isEditing" class="hint-text">Leave empty to keep current image</p>
+          </div>
+
+          <!-- Product Details -->
           <div class="form-grid">
             <div class="form-group">
-              <label>Product Name</label>
-              <input v-model="formData.name" required type="text" />
+              <label>Product Name <span class="required">*</span></label>
+              <input
+                v-model="formData.name"
+                required
+                type="text"
+                placeholder="Enter product name"
+                class="form-input"
+              />
             </div>
             <div class="form-group">
-              <label>Price ($)</label>
-              <input v-model="formData.price" required type="number" step="0.01" />
+              <label>Price ($) <span class="required">*</span></label>
+              <input
+                v-model="formData.price"
+                required
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                class="form-input"
+              />
             </div>
+          </div>
+
+          <div class="form-grid">
             <div class="form-group">
-              <label>Category</label>
-              <select v-model="formData.categoryId" required @change="onCategoryChange">
+              <label>Category <span class="required">*</span></label>
+              <select v-model="formData.categoryId" required @change="onCategoryChange" class="form-input">
+                <option :value="null" disabled>Select a category</option>
                 <option v-for="cat in categories" :key="cat.id" :value="cat.id">
                   {{ cat.name }}
                 </option>
@@ -70,7 +162,7 @@
             </div>
             <div class="form-group">
               <label>Sub-Category</label>
-              <select v-model="formData.subCategoryId">
+              <select v-model="formData.subCategoryId" class="form-input">
                 <option :value="null">None</option>
                 <option v-for="sub in availableSubCategories" :key="sub.id" :value="sub.id">
                   {{ sub.name }}
@@ -81,22 +173,46 @@
 
           <div class="form-group">
             <label>Description</label>
-            <textarea v-model="formData.description" rows="3"></textarea>
+            <textarea
+              v-model="formData.description"
+              rows="4"
+              placeholder="Enter product description"
+              class="form-input"
+            ></textarea>
           </div>
 
-          <div class="form-group">
-            <label>Product Image</label>
-            <input type="file" @change="handleFileUpload" accept="image/*" :required="!isEditing" />
-            <p v-if="isEditing" class="hint">Leave empty to keep current image</p>
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
           </div>
 
-          <div class="modal-footer">
-            <button type="button" @click="closeModal" class="btn-secondary">Cancel</button>
+          <div class="modal-actions">
+            <button type="button" @click="closeModal" class="btn-text">Cancel</button>
             <button type="submit" class="btn-primary" :disabled="loading">
-              {{ loading ? 'Saving...' : 'Save Product' }}
+              {{ loading ? 'Saving...' : (isEditing ? 'Update Product' : 'Create Product') }}
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay" @click="showDeleteModal = false">
+      <div class="modal-content modal-small" @click.stop>
+        <div class="modal-header">
+          <h3>Confirm Delete</h3>
+          <button @click="showDeleteModal = false" class="btn-close">✕</button>
+        </div>
+        <div class="modal-body text-center">
+          <div class="warning-icon">⚠️</div>
+          <p>Are you sure you want to delete this product?</p>
+          <p class="delete-warning">This action cannot be undone.</p>
+        </div>
+        <div class="modal-actions">
+          <button @click="showDeleteModal = false" class="btn-text">Cancel</button>
+          <button @click="executeDelete" class="btn-danger" :disabled="loading">
+            {{ loading ? 'Deleting...' : 'Delete Permanently' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -113,8 +229,12 @@ export default {
       categories: [],
       searchQuery: '',
       showModal: false,
+      showDeleteModal: false,
       isEditing: false,
       loading: false,
+      errorMessage: '',
+      imagePreview: null,
+      productToDelete: null,
       productService,
       formData: {
         id: null,
@@ -151,27 +271,67 @@ export default {
         this.products = prodData;
         this.categories = catData;
       } catch (err) {
-        alert('Failed to load data: ' + err);
+        this.errorMessage = 'Failed to load data: ' + err;
       }
     },
     handleFileUpload(event) {
-      this.formData.image = event.target.files[0];
+      const file = event.target.files[0];
+      if (file) {
+        this.formData.image = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.imagePreview = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    removeImage() {
+      this.imagePreview = null;
+      this.formData.image = null;
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.value = '';
+      }
     },
     openModal(product = null) {
+      this.errorMessage = '';
       if (product) {
         this.isEditing = true;
-        this.formData = { ...product, image: null };
+        this.formData = {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          description: product.description,
+          categoryId: product.categoryId,
+          subCategoryId: product.subCategoryId,
+          image: null
+        };
+        this.imagePreview = productService.getProductImageUrl(product.imagePath);
       } else {
         this.isEditing = false;
-        this.formData = { name: '', price: 0, description: '', categoryId: null, subCategoryId: null, image: null };
+        this.formData = {
+          id: null,
+          name: '',
+          price: 0,
+          description: '',
+          categoryId: null,
+          subCategoryId: null,
+          image: null
+        };
+        this.imagePreview = null;
       }
       this.showModal = true;
     },
     closeModal() {
       this.showModal = false;
+      this.removeImage();
+    },
+    onCategoryChange() {
+      this.formData.subCategoryId = null;
     },
     async handleSubmit() {
       this.loading = true;
+      this.errorMessage = '';
+
       const data = new FormData();
       data.append('name', this.formData.name);
       data.append('price', this.formData.price);
@@ -189,178 +349,602 @@ export default {
         await this.fetchData();
         this.closeModal();
       } catch (err) {
-        alert('Operation failed: ' + (err.message || err));
+        this.errorMessage = err.message || 'Operation failed';
       } finally {
         this.loading = false;
       }
     },
-    async confirmDelete(id) {
-      if (confirm('Are you sure you want to delete this product?')) {
-        await productService.deleteProduct(id);
-        this.fetchData();
+    confirmDelete(id) {
+      this.productToDelete = id;
+      this.showDeleteModal = true;
+    },
+    async executeDelete() {
+      if (!this.productToDelete) return;
+      this.loading = true;
+      try {
+        await productService.deleteProduct(this.productToDelete);
+        this.showDeleteModal = false;
+        this.productToDelete = null;
+        await this.fetchData();
+      // eslint-disable-next-line no-unused-vars
+      } catch (err) {
+        this.errorMessage = 'Failed to delete product';
+      } finally {
+        this.loading = false;
       }
     },
     truncate(text) {
-      return text?.length > 50 ? text.substring(0, 50) + '...' : text;
+      return text?.length > 60 ? text.substring(0, 60) + '...' : text;
     }
   }
 };
 </script>
 
 <style scoped>
-.action-bar {
+/* --- PAGE LAYOUT --- */
+.admin-products {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  align-items: flex-start;
+  margin-bottom: 2rem;
 }
 
-.search-box input {
-  padding: 10px 15px;
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.page-subtitle {
+  color: #64748b;
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.badge {
+  background: #e2e8f0;
+  color: #475569;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* --- SEARCH SECTION --- */
+.search-section {
+  margin-bottom: 1.5rem;
+}
+
+.search-box {
+  position: relative;
+  max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  border: 1px solid #ddd;
-  width: 300px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
 }
 
+.search-input:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+/* --- BUTTONS --- */
+.btn-primary {
+  background: #0d6efd;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+  font-size: 0.95rem;
+}
+
+.btn-primary:hover {
+  background: #0b5ed7;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --- TABLE STYLES --- */
 .table-container {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
   overflow: hidden;
+  border: 1px solid #e2e8f0;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
+}
+
+.admin-table thead {
+  background: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .admin-table th {
-  background: #f8f9fa;
-  padding: 15px;
+  padding: 1rem 1.25rem;
   font-weight: 600;
-  color: #444;
+  color: #475569;
+  text-align: left;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .admin-table td {
-  padding: 15px;
-  border-bottom: 1px solid #eee;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
+  color: #334155;
+}
+
+.admin-table tbody tr {
+  transition: background 0.2s;
+}
+
+.admin-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.image-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .table-img {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .product-info .p-name {
-  display: block;
   font-weight: 600;
-  color: #333;
+  color: #1e293b;
+  font-size: 0.95rem;
 }
 
 .product-info .p-desc {
-  font-size: 0.8rem;
-  color: #888;
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.4;
 }
 
-.badge {
-  background: #e1f5fe;
-  color: #0288d1;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+.category-badge {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-block;
 }
 
 .sub-badge {
-  font-size: 11px;
-  color: #777;
-  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.35rem;
+  font-weight: 500;
 }
 
 .price-cell {
-  font-weight: bold;
-  color: #2ecc71;
+  font-weight: 700;
+  color: #059669;
+  font-size: 1.05rem;
+}
+
+.rating-cell {
+  align-items: center;
+  gap: 0.25rem;;
+  font-weight: 500;
+}
+
+.star-icon {
+  font-size: 1rem;
 }
 
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
-.btn-edit, .btn-delete {
+.btn-action {
   background: none;
-  border: 1px solid #ddd;
-  padding: 6px;
-  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-edit:hover { background: #f0f7ff; border-color: #0990ff; }
-.btn-delete:hover { background: #fff0f0; border-color: #ff4d4f; }
-
-.btn-primary {
-  background: #0990ff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.btn-action.edit {
+  color: #0d6efd;
+  background: #f0f7ff;
+  border-color: #bfdbfe;
+}
+
+.btn-action.edit:hover {
+  background: #dbeafe;
+  border-color: #0d6efd;
+}
+
+.btn-action.delete {
+  color: #dc3545;
+  background: #fff5f5;
+  border-color: #fecaca;
+}
+
+.btn-action.delete:hover {
+  background: #fee2e2;
+  border-color: #dc3545;
+}
+
+/* --- EMPTY STATE --- */
+.empty-state {
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.empty-hint {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+/* --- MODAL STYLES --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 1000;
+  padding: 1rem;
 }
 
 .modal-content {
   background: white;
-  padding: 30px;
   border-radius: 12px;
-  width: 600px;
-  max-width: 95%;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
+.modal-content.large {
+  max-width: 700px;
+}
+
+.modal-content.modal-small {
+  max-width: 400px;
+}
+
+.modal-header {
+  padding: 1.5rem 1.75rem;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #64748b;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-close:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.modal-body {
+  padding: 1.75rem;
+}
+
+/* --- IMAGE UPLOAD --- */
+.image-upload-area {
+  margin-top: 0.5rem;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #94a3b8;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.upload-placeholder:hover {
+  border-color: #0d6efd;
+  color: #0d6efd;
+  background: #f0f7ff;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.upload-placeholder span {
+  display: block;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+.upload-hint {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 0.5rem;
+}
+
+.image-preview {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: background 0.2s;
+}
+
+.remove-image:hover {
+  background: #dc3545;
+}
+
+/* --- FORM STYLES --- */
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 1.25rem;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 1.25rem;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 0.5rem;
   font-weight: 600;
-  font-size: 14px;
+  color: #475569;
+  font-size: 0.9rem;
 }
 
-.form-group input, .form-group select, .form-group textarea {
+.required {
+  color: #dc3545;
+}
+
+.form-input {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  padding: 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
 }
 
-.modal-footer {
+.form-input:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.form-input::placeholder {
+  color: #cbd5e1;
+}
+
+.hint-text {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.error-message {
+  background: #fee2e2;
+  color: #dc3545;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+/* --- MODAL ACTIONS --- */
+.modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 0.75rem;
+  padding: 1.25rem 1.75rem;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 1.5rem;
+  margin-left: -1.75rem;
+  margin-right: -1.75rem;
+  margin-bottom: -1.75rem;
+}
+
+.btn-text {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-text:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover {
+  background: #bb2d3b;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --- DELETE MODAL --- */
+.text-center {
+  text-align: center;
+}
+
+.warning-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.delete-warning {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .admin-table {
+    font-size: 0.85rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.75rem;
+  }
 }
 </style>

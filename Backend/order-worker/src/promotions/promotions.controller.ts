@@ -19,6 +19,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { PromotionsService } from './promotions.service';
+import { UpdatePromotionDto } from './dto/update-promotion.dto';
+import { CreatePromotionDto } from './dto/create-promotion.dto';
 
 @Controller('promotions')
 export class PromotionsController {
@@ -41,15 +43,12 @@ export class PromotionsController {
       }),
     }),
   )
-  create(@Body() body: any, @UploadedFile() file: any) {
-    return this.promotionsService.create({
-      name: body.name,
-      originalPrice: body.originalPrice,
-      discountPercent: body.discountPercent,
-      rating: body.rating,
-      reviewCount: body.reviewCount,
-      image: file?.filename,
-    });
+  create(
+    @Body() createPromotionDto: CreatePromotionDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    // Pass them as two separate arguments
+    return this.promotionsService.create(createPromotionDto, file);
   }
 
   @Patch(':id')
@@ -66,17 +65,11 @@ export class PromotionsController {
   )
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: any,
-    @UploadedFile() file?: any,
+    @Body() updatePromotionDto: UpdatePromotionDto,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.promotionsService.update(id, {
-      name: body.name,
-      originalPrice: body.originalPrice,
-      discountPercent: body.discountPercent,
-      rating: body.rating,
-      reviewCount: body.reviewCount,
-      image: file?.filename,
-    });
+    // Pass id, dto, and file separately
+    return this.promotionsService.update(id, updatePromotionDto, file);
   }
 
   @Delete(':id')

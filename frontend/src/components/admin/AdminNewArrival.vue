@@ -1,14 +1,22 @@
 <template>
   <div class="admin-arrivals">
+    <!-- Page Header -->
     <div class="page-header">
-      <h2>New Arrivals Management</h2>
-      <button @click="openCreateModal" class="btn-primary">
-        + Add New Arrival
-      </button>
+      <div>
+        <h2 class="page-title">New Arrivals Management</h2>
+        <p class="page-subtitle">Showcase your latest products and new collections</p>
+      </div>
+      <div class="header-actions">
+        <span class="badge">{{ arrivals.length }} Total</span>
+        <button @click="openCreateModal" class="btn-primary">
+          <span class="icon">+</span> Add New Arrival
+        </button>
+      </div>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading">
+    <div v-if="loading" class="loading-state">
+      <div class="spinner"></div>
       <p>Loading new arrivals...</p>
     </div>
 
@@ -21,69 +29,88 @@
             :alt="arrival.title"
             @error="handleImageError"
           />
+          <div class="new-badge">NEW</div>
         </div>
         <div class="arrival-info">
-          <h3>{{ arrival.title }}</h3>
-          <p class="subtitle">{{ arrival.subtitle }}</p>
-          <a v-if="arrival.link" :href="arrival.link" target="_blank" class="link">
-            🔗 {{ arrival.link }}
-          </a>
-          <p v-else class="no-link">No link provided</p>
+          <h3 class="arrival-title">{{ arrival.title }}</h3>
+          <p class="arrival-subtitle">{{ arrival.subtitle }}</p>
+          <div class="arrival-link-section">
+            <a v-if="arrival.link" :href="arrival.link" target="_blank" class="arrival-link">
+              🔗 View Product
+            </a>
+            <span v-else class="no-link">No link provided</span>
+          </div>
         </div>
         <div class="arrival-actions">
-          <button @click="openEditModal(arrival)" class="btn-edit">
-            ✏️ Edit
+          <button @click="openEditModal(arrival)" class="btn-action edit" title="Edit">
+            ✏️
           </button>
-          <button @click="confirmDelete(arrival)" class="btn-delete">
-            🗑️ Delete
+          <button @click="confirmDelete(arrival)" class="btn-action delete" title="Delete">
+            🗑️
           </button>
         </div>
       </div>
 
       <!-- Empty State -->
       <div v-if="arrivals.length === 0" class="empty-state">
-        <p>No new arrivals found. Create your first arrival!</p>
+        <div class="empty-icon">✨</div>
+        <p>No new arrivals found</p>
+        <p class="empty-hint">Add your first new arrival to showcase latest products</p>
+        <button @click="openCreateModal" class="btn-primary">
+          <span class="icon">+</span> Create New Arrival
+        </button>
       </div>
     </div>
 
     <!-- Create/Edit Modal -->
     <div v-if="showModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
+      <div class="modal-content large" @click.stop>
         <div class="modal-header">
           <h3>{{ isEditMode ? 'Edit New Arrival' : 'Create New Arrival' }}</h3>
           <button @click="closeModal" class="btn-close">✕</button>
         </div>
 
-        <form @submit.prevent="submitForm" class="modal-form">
-          <!-- Image Upload -->
+        <form @submit.prevent="submitForm" class="modal-body">
+          <!-- Product Image Upload -->
           <div class="form-group">
             <label>Product Image <span class="required">*</span></label>
-            <input
-              type="file"
-              @change="handleFileChange"
-              accept="image/*"
-              :required="!isEditMode"
-              ref="fileInput"
-            />
-            <small>Recommended size: 500x500px</small>
-
-            <!-- Image Preview -->
-            <div v-if="imagePreview" class="image-preview">
-              <img :src="imagePreview" alt="Preview" />
+            <div class="image-upload-area">
+              <div v-if="imagePreview" class="image-preview">
+                <img :src="imagePreview" alt="Preview" />
+                <button type="button" @click="removeImage" class="remove-image">
+                  ✕
+                </button>
+              </div>
+              <label v-else for="arrival-image-input" class="upload-placeholder">
+                <div class="upload-icon">📸</div>
+                <span>Click to upload product image</span>
+                <span class="upload-hint">Recommended size: 500x500px (Max 5MB)</span>
+              </label>
+              <input
+                id="arrival-image-input"
+                type="file"
+                accept="image/*"
+                @change="handleFileChange"
+                style="display: none"
+                ref="fileInput"
+                :required="!isEditMode"
+              />
             </div>
+            <p v-if="isEditMode" class="hint-text">Leave empty to keep current image</p>
           </div>
 
           <!-- Title -->
           <div class="form-group">
-            <label>Title <span class="required">*</span></label>
+            <label>Product Title <span class="required">*</span></label>
             <input
               type="text"
               v-model="formData.title"
               placeholder="Enter product title"
               required
               minlength="3"
+              class="form-input"
             />
-            <small>Minimum 3 characters</small>
+            <p class="hint-text">Minimum 3 characters</p>
           </div>
 
           <!-- Subtitle/Description -->
@@ -95,19 +122,21 @@
               rows="4"
               required
               minlength="10"
+              class="form-input"
             ></textarea>
-            <small>Minimum 10 characters</small>
+            <p class="hint-text">Minimum 10 characters</p>
           </div>
 
           <!-- Link (Optional) -->
           <div class="form-group">
-            <label>Product Link (Optional)</label>
+            <label>Product Link</label>
             <input
               type="url"
               v-model="formData.link"
               placeholder="https://example.com/product"
+              class="form-input"
             />
-            <small>Link for "Shop Now" button</small>
+            <p class="hint-text">Optional: Link for "Shop Now" or product details</p>
           </div>
 
           <!-- Error Message -->
@@ -116,12 +145,12 @@
           </div>
 
           <!-- Form Actions -->
-          <div class="form-actions">
-            <button type="button" @click="closeModal" class="btn-secondary">
+          <div class="modal-actions">
+            <button type="button" @click="closeModal" class="btn-text">
               Cancel
             </button>
             <button type="submit" class="btn-primary" :disabled="submitting">
-              {{ submitting ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }}
+              {{ submitting ? 'Saving...' : (isEditMode ? 'Update Arrival' : 'Create Arrival') }}
             </button>
           </div>
         </form>
@@ -135,16 +164,17 @@
           <h3>Confirm Delete</h3>
           <button @click="showDeleteModal = false" class="btn-close">✕</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body text-center">
+          <div class="warning-icon">⚠️</div>
           <p>Are you sure you want to delete this arrival?</p>
           <p class="delete-warning">This action cannot be undone.</p>
         </div>
-        <div class="form-actions">
-          <button @click="showDeleteModal = false" class="btn-secondary">
+        <div class="modal-actions">
+          <button @click="showDeleteModal = false" class="btn-text">
             Cancel
           </button>
           <button @click="deleteArrival" class="btn-danger" :disabled="submitting">
-            {{ submitting ? 'Deleting...' : 'Delete' }}
+            {{ submitting ? 'Deleting...' : 'Delete Permanently' }}
           </button>
         </div>
       </div>
@@ -227,13 +257,11 @@ export default {
     handleFileChange(event) {
       const file = event.target.files[0];
       if (file) {
-        // Validate file type
         if (!file.type.startsWith('image/')) {
           this.errorMessage = 'Please select a valid image file';
           return;
         }
 
-        // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
           this.errorMessage = 'Image size must be less than 5MB';
           return;
@@ -242,7 +270,6 @@ export default {
         this.selectedFile = file;
         this.errorMessage = '';
 
-        // Create image preview
         const reader = new FileReader();
         reader.onload = (e) => {
           this.imagePreview = e.target.result;
@@ -251,10 +278,17 @@ export default {
       }
     },
 
+    removeImage() {
+      this.imagePreview = null;
+      this.selectedFile = null;
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.value = '';
+      }
+    },
+
     async submitForm() {
       this.errorMessage = '';
 
-      // Validate
       if (!this.formData.title || this.formData.title.length < 3) {
         this.errorMessage = 'Title must be at least 3 characters';
         return;
@@ -275,16 +309,13 @@ export default {
       try {
         const formData = new FormData();
 
-        // Add image if selected
         if (this.selectedFile) {
           formData.append('image', this.selectedFile);
         }
 
-        // Add required fields
         formData.append('title', this.formData.title);
         formData.append('subtitle', this.formData.subtitle);
 
-        // Add optional link
         if (this.formData.link) {
           formData.append('link', this.formData.link);
         }
@@ -300,7 +331,6 @@ export default {
       } catch (error) {
         console.error('Error saving arrival:', error);
 
-        // Handle validation errors
         if (error.message && Array.isArray(error.message)) {
           this.errorMessage = error.message.join(', ');
         } else {
@@ -336,346 +366,579 @@ export default {
     closeModal() {
       this.showModal = false;
       this.formData = { title: '', subtitle: '', link: '' };
-      this.imagePreview = null;
-      this.selectedFile = null;
+      this.removeImage();
       this.errorMessage = '';
-      if (this.$refs.fileInput) {
-        this.$refs.fileInput.value = '';
-      }
     },
   }
 }
 </script>
 
 <style scoped>
+/* --- PAGE LAYOUT --- */
 .admin-arrivals {
+  padding: 2rem;
   max-width: 1400px;
+  margin: 0 auto;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+  align-items: flex-start;
+  margin-bottom: 2rem;
 }
 
-.page-header h2 {
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1e293b;
   margin: 0;
-  font-size: 24px;
 }
 
+.page-subtitle {
+  color: #64748b;
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.badge {
+  background: #e2e8f0;
+  color: #475569;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* --- BUTTONS --- */
 .btn-primary {
-  background: #0990ff;
+  background: #0d6efd;
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
   font-weight: 500;
-  transition: all 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+  font-size: 0.95rem;
 }
 
 .btn-primary:hover {
-  background: #0077ee;
+  background: #0b5ed7;
 }
 
 .btn-primary:disabled {
-  background: #ccc;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.loading {
+/* --- LOADING STATE --- */
+.loading-state {
   text-align: center;
-  padding: 60px 20px;
-  color: #666;
+  padding: 5rem 2rem;
+  background: white;
+  border-radius: 12px;
+  color: #64748b;
 }
 
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0d6efd;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- ARRIVALS GRID --- */
 .arrivals-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
 }
 
 .arrival-card {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
   overflow: hidden;
-  transition: transform 0.2s;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .arrival-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: #0d6efd;
 }
 
 .arrival-image {
+  position: relative;
   width: 100%;
-  height: 250px;
+  height: 280px;
   overflow: hidden;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 }
 
 .arrival-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.arrival-card:hover .arrival-image img {
+  transform: scale(1.05);
+}
+
+.new-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  color: white;
+  padding: 0.35rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 .arrival-info {
-  padding: 20px;
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.arrival-info h3 {
-  margin: 0 0 10px 0;
-  font-size: 18px;
-  color: #333;
+.arrival-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.4;
 }
 
-.subtitle {
-  margin: 0 0 10px 0;
-  color: #666;
-  font-size: 14px;
-  line-height: 1.5;
+.arrival-subtitle {
+  margin: 0 0 1rem 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.6;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.link {
-  display: inline-block;
-  color: #0990ff;
-  font-size: 13px;
-  text-decoration: none;
-  margin-top: 5px;
-  word-break: break-all;
-}
-
-.link:hover {
-  text-decoration: underline;
-}
-
-.no-link {
-  margin: 5px 0 0 0;
-  color: #999;
-  font-size: 13px;
-  font-style: italic;
-}
-
-.arrival-actions {
-  padding: 0 20px 20px;
-  display: flex;
-  gap: 10px;
-}
-
-.btn-edit, .btn-delete {
   flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
+}
+
+.arrival-link-section {
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.arrival-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #0d6efd;
+  font-size: 0.875rem;
+  text-decoration: none;
   font-weight: 500;
   transition: all 0.2s;
 }
 
-.btn-edit {
-  background: #f0f2ff;
-  color: #0990ff;
+.arrival-link:hover {
+  color: #0b5ed7;
+  gap: 0.5rem;
 }
 
-.btn-edit:hover {
-  background: #e0e4ff;
+.no-link {
+  display: inline-block;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  font-style: italic;
 }
 
-.btn-delete {
-  background: #fff5f5;
-  color: #dc3545;
+.arrival-actions {
+  padding: 0 1.5rem 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
 }
 
-.btn-delete:hover {
-  background: #ffe5e5;
-}
-
-.empty-state {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 60px 20px;
-  color: #999;
-  background: white;
-  border-radius: 12px;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+.btn-action {
+  flex: 1;
+  background: none;
+  border: 1px solid #cbd5e1;
+  padding: 0.625rem;
+  border-radius: 6px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-action.edit {
+  color: #0d6efd;
+  background: #f0f7ff;
+  border-color: #bfdbfe;
+}
+
+.btn-action.edit:hover {
+  background: #dbeafe;
+  border-color: #0d6efd;
+}
+
+.btn-action.delete {
+  color: #dc3545;
+  background: #fff5f5;
+  border-color: #fecaca;
+}
+
+.btn-action.delete:hover {
+  background: #fee2e2;
+  border-color: #dc3545;
+}
+
+/* --- EMPTY STATE --- */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 5rem 2rem;
+  color: #64748b;
+  background: white;
+  border-radius: 12px;
+  border: 2px dashed #e2e8f0;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.4;
+}
+
+.empty-state p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.empty-hint {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
+}
+
+/* --- MODAL STYLES --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 1rem;
 }
 
 .modal-content {
   background: white;
   border-radius: 12px;
-  max-width: 600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
 }
 
-.modal-small {
-  max-width: 400px;
+.modal-content.large {
+  max-width: 700px;
+}
+
+.modal-content.modal-small {
+  max-width: 450px;
 }
 
 .modal-header {
+  padding: 1.5rem 1.75rem;
+  border-bottom: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #eee;
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1e293b;
 }
 
 .btn-close {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 1.5rem;
+  color: #64748b;
   cursor: pointer;
-  color: #999;
-  padding: 0;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
 .btn-close:hover {
-  color: #333;
+  background: #f1f5f9;
+  color: #1e293b;
 }
 
-.modal-form, .modal-body {
-  padding: 24px;
+.modal-body {
+  padding: 1.75rem;
 }
 
+/* --- IMAGE UPLOAD --- */
+.image-upload-area {
+  margin-top: 0.5rem;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #94a3b8;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.upload-placeholder:hover {
+  border-color: #0d6efd;
+  color: #0d6efd;
+  background: #f0f7ff;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.upload-placeholder span {
+  display: block;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+.upload-hint {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 0.5rem;
+}
+
+.image-preview {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: background 0.2s;
+}
+
+.remove-image:hover {
+  background: #dc3545;
+}
+
+/* --- FORM STYLES --- */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #333;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.9rem;
 }
 
 .required {
   color: #dc3545;
 }
 
-.form-group input[type="text"],
-.form-group input[type="url"],
-.form-group input[type="file"],
-.form-group textarea {
+.form-input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.form-group textarea {
-  resize: vertical;
-  font-family: inherit;
-}
-
-.form-group small {
-  display: block;
-  margin-top: 6px;
-  color: #666;
-  font-size: 12px;
-}
-
-.image-preview {
-  margin-top: 15px;
+  padding: 0.75rem;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #ddd;
-  max-width: 300px;
-}
-
-.image-preview img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.error-message {
-  background: #fee;
-  color: #c33;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  border-left: 4px solid #c33;
-}
-
-.form-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  padding: 20px 24px;
-  border-top: 1px solid #eee;
-}
-
-.btn-secondary {
-  background: white;
-  border: 1px solid #ddd;
-  color: #333;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
+  font-size: 0.95rem;
   transition: all 0.2s;
 }
 
-.btn-secondary:hover {
-  background: #f8f9fa;
+.form-input:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.form-input::placeholder {
+  color: #cbd5e1;
+}
+
+textarea.form-input {
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.hint-text {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.error-message {
+  background: #fee2e2;
+  color: #dc3545;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #dc3545;
+}
+
+/* --- MODAL ACTIONS --- */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem 1.75rem;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 1.5rem;
+  margin-left: -1.75rem;
+  margin-right: -1.75rem;
+  margin-bottom: -1.75rem;
+}
+
+.btn-text {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-text:hover {
+  background: #f1f5f9;
+  color: #1e293b;
 }
 
 .btn-danger {
   background: #dc3545;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
+  font-weight: 500;
+  transition: background 0.2s;
 }
 
 .btn-danger:hover {
-  background: #c82333;
+  background: #bb2d3b;
 }
 
 .btn-danger:disabled {
-  background: #ccc;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
+/* --- DELETE MODAL --- */
+.text-center {
+  text-align: center;
+}
+
+.warning-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
 .delete-warning {
-  color: #dc3545;
-  font-weight: 500;
-  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  .arrivals-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .arrival-image {
+    height: 240px;
+  }
 }
 </style>

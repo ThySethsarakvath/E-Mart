@@ -12,9 +12,7 @@ export default {
 
   async createProduct(formData) {
     try {
-      const response = await apiClient.post('/products', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await apiClient.post('/products', formData);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -23,10 +21,7 @@ export default {
 
   async updateProduct(id, formData) {
     try {
-      // NestJS Patch with FileInterceptor
-      const response = await apiClient.patch(`/products/${id}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await apiClient.patch(`/products/${id}`, formData);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

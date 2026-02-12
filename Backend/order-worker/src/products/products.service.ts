@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
@@ -23,13 +28,18 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto, imageFilename: string) {
-   
+    const catId = Number(createProductDto.categoryId);
+
+    if (isNaN(catId)) {
+      throw new BadRequestException(
+        `Invalid Category ID: ${createProductDto.categoryId}`,
+      );
+    }
     const category = await this.categoryRepo.findOne({
-      where: { id: +createProductDto.categoryId },
+      where: { id: catId },
     });
     if (!category) throw new NotFoundException('Category not found');
 
-   
     let subCategory: SubCategory | null = null;
     if (createProductDto.subCategoryId) {
       subCategory = await this.subCategoryRepo.findOne({
@@ -38,10 +48,9 @@ export class ProductsService {
       if (!subCategory) throw new NotFoundException('SubCategory not found');
     }
 
-    
     const newProduct = this.productsRepository.create({
       ...createProductDto,
-      imagePath: imageFilename, 
+      imagePath: imageFilename,
       category: category,
       ...(subCategory && { subCategory }),
     });
@@ -81,6 +90,7 @@ export class ProductsService {
     if (product.imagePath) {
       try {
         await unlink(join('./uploads/products', product.imagePath));
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         // Ignore file not found errors
       }
@@ -95,7 +105,7 @@ export class ProductsService {
     imageFilename: string | null,
   ) {
     const product = await this.findOne(id);
-    
+
     // Update basic fields
     Object.assign(product, updateProductDto);
 

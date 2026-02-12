@@ -1,12 +1,13 @@
+/* eslint-disable no-empty */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Promotion } from './promotion.entity';
+import { Promotion } from './entities/promotion.entity';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
+import { UpdatePromotionDto } from './dto/update-promotion.dto';
+import { CreatePromotionDto } from './dto/create-promotion.dto';
 
 @Injectable()
 export class PromotionsService {
@@ -19,19 +20,15 @@ export class PromotionsService {
     return this.promotionRepo.find();
   }
 
-  async create(data: any) {
-    const originalPrice = parseFloat(data.originalPrice);
-    const discountPercent = parseInt(data.discountPercent);
-    const finalPrice = originalPrice - (originalPrice * discountPercent) / 100;
+  async create(dto: CreatePromotionDto, file: Express.Multer.File) {
+    // dto already has numbers because of @Type(() => Number) in DTO
+    const finalPrice =
+      dto.originalPrice - (dto.originalPrice * dto.discountPercent) / 100;
 
     const promotion = this.promotionRepo.create({
-      name: data.name,
-      imagePath: data.image.filename,
-      originalPrice: originalPrice,
-      discountPercent: discountPercent,
+      ...dto,
+      imagePath: file.filename,
       finalPrice: finalPrice,
-      rating: parseFloat(data.rating),
-      reviewCount: parseInt(data.reviewCount),
     });
 
     return {
@@ -40,48 +37,35 @@ export class PromotionsService {
     };
   }
 
-  async update(id: number, data: any) {
+  async update(
+    id: number,
+    dto: UpdatePromotionDto,
+    file?: Express.Multer.File,
+  ) {
     const promotion = await this.promotionRepo.findOne({ where: { id } });
 
     if (!promotion) {
       throw new NotFoundException(`Promotion with ID ${id} not found`);
     }
 
-    // Update fields if provided
-    if (data.name) {
-      promotion.name = data.name;
-    }
-    if (data.rating) {
-      promotion.rating = parseFloat(data.rating);
-    }
-    if (data.reviewCount) {
-      promotion.reviewCount = parseInt(data.reviewCount);
-    }
+    // This automatically updates name, rating, reviewCount, etc.
+    // No more parseFloat() needed because dto.rating is already a number!
+    Object.assign(promotion, dto);
 
-    // Recalculate finalPrice if originalPrice or discountPercent changes
-    if (data.originalPrice) {
-      promotion.originalPrice = parseFloat(data.originalPrice);
-    }
-    if (data.discountPercent) {
-      promotion.discountPercent = parseInt(data.discountPercent);
-    }
-
-    // Calculate finalPrice
-    if (data.originalPrice || data.discountPercent) {
+    // Recalculate finalPrice if price or discount changed
+    if (dto.originalPrice !== undefined || dto.discountPercent !== undefined) {
       promotion.finalPrice =
         promotion.originalPrice -
         (promotion.originalPrice * promotion.discountPercent) / 100;
     }
 
-    // If new image is uploaded, delete old image and update path
-    if (data.image) {
-      // Delete old image file
+    if (file) {
       try {
         await unlink(join('./uploads/promotions', promotion.imagePath));
       } catch (error) {
-        // Ignore error if file doesn't exist
+        // Ignore if old file is missing
       }
-      promotion.imagePath = data.image.filename;
+      promotion.imagePath = file.filename;
     }
 
     return {
@@ -97,12 +81,9 @@ export class PromotionsService {
       throw new NotFoundException(`Promotion with ID ${id} not found`);
     }
 
-    // Delete image file
     try {
       await unlink(join('./uploads/promotions', promotion.imagePath));
-    } catch (error) {
-      // Ignore error if file doesn't exist
-    }
+    } catch (error) {}
 
     await this.promotionRepo.remove(promotion);
 

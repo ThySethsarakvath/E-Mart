@@ -1,30 +1,43 @@
 <template>
   <div class="admin-categories">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">Category Management</h2>
+        <p class="page-subtitle">Organize your products with categories and subcategories</p>
+      </div>
+      <div class="header-actions">
+        <span class="badge">{{ categories.length }} Categories</span>
+        <span class="badge">{{ subcategories.length }} Subcategories</span>
+      </div>
+    </div>
+
     <!-- Tab Navigation -->
     <div class="tabs">
       <button :class="['tab', { active: activeTab === 'categories' }]" @click="activeTab = 'categories'">
-        Categories
+        <span class="tab-icon">🏷️</span> Categories
       </button>
       <button :class="['tab', { active: activeTab === 'subcategories' }]" @click="activeTab = 'subcategories'">
-        Subcategories
+        <span class="tab-icon">📑</span> Subcategories
       </button>
     </div>
 
     <!-- Categories Tab -->
     <div v-show="activeTab === 'categories'" class="tab-content">
-      <div class="page-header">
-        <h2>Categories Management</h2>
+      <div class="section-header">
+        <h3 class="section-title">All Categories</h3>
         <button @click="openCreateCategoryModal" class="btn-primary">
-          + Add New Category
+          <span class="icon">+</span> Add New Category
         </button>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="loading">
+      <div v-if="loading" class="loading-state">
+        <div class="spinner"></div>
         <p>Loading categories...</p>
       </div>
 
-      <!-- Categories Grid (Updated Design) -->
+      <!-- Categories Grid -->
       <div v-else class="categories-showcase">
         <div v-for="category in categories" :key="category.id" class="category-showcase-card">
           <div class="category-main">
@@ -39,24 +52,25 @@
           </div>
 
           <div class="category-hover-actions">
-            <button @click="viewCategoryDetails(category)" class="action-btn view-btn">
+            <button @click="viewCategoryDetails(category)" class="action-btn view-btn" title="View Details">
               👁️
             </button>
-            <button @click="openEditCategoryModal(category)" class="action-btn edit-btn">
+            <button @click="openEditCategoryModal(category)" class="action-btn edit-btn" title="Edit">
               ✏️
             </button>
-            <button @click="confirmDeleteCategory(category)" class="action-btn delete-btn">
+            <button @click="confirmDeleteCategory(category)" class="action-btn delete-btn" title="Delete">
               🗑️
             </button>
           </div>
         </div>
 
         <!-- Empty State -->
-        <div v-if="categories.length === 0" class="empty-state-modern">
+        <div v-if="categories.length === 0" class="empty-state">
           <div class="empty-icon">🏷️</div>
           <p>No categories found</p>
+          <p class="empty-hint">Create your first category to get started</p>
           <button @click="openCreateCategoryModal" class="btn-primary">
-            Create Your First Category
+            <span class="icon">+</span> Create Category
           </button>
         </div>
       </div>
@@ -64,41 +78,44 @@
 
     <!-- Subcategories Tab -->
     <div v-show="activeTab === 'subcategories'" class="tab-content">
-      <div class="page-header">
-        <h2>Subcategories Management</h2>
+      <div class="section-header">
+        <h3 class="section-title">All Subcategories</h3>
         <button @click="openCreateSubcategoryModal" class="btn-primary">
-          + Add New Subcategory
+          <span class="icon">+</span> Add New Subcategory
         </button>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loadingSubcategories" class="loading">
+      <div v-if="loadingSubcategories" class="loading-state">
+        <div class="spinner"></div>
         <p>Loading subcategories...</p>
       </div>
 
       <!-- Subcategories Table -->
-      <div v-else class="subcategories-table-container">
-        <table class="subcategories-table">
+      <div v-else class="table-container">
+        <table class="admin-table">
           <thead>
             <tr>
               <th>ID</th>
-              <th>Name</th>
+              <th>Subcategory Name</th>
               <th>Parent Category</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="subcategory in subcategories" :key="subcategory.id">
-              <td>{{ subcategory.id }}</td>
-              <td>{{ subcategory.name }}</td>
+              <td class="id-cell">{{ subcategory.id }}</td>
+              <td>
+                <span class="subcategory-name">{{ subcategory.name }}</span>
+              </td>
               <td>
                 <span class="category-badge">
                   {{ subcategory.category?.name || 'N/A' }}
                 </span>
               </td>
               <td>
-                <button @click="confirmDeleteSubcategory(subcategory)" class="btn-delete-small">
-                  🗑️ Delete
+                <button @click="confirmDeleteSubcategory(subcategory)" class="btn-action delete" title="Delete">
+                  🗑️
                 </button>
               </td>
             </tr>
@@ -107,38 +124,65 @@
 
         <!-- Empty State -->
         <div v-if="subcategories.length === 0" class="empty-state">
-          <p>No subcategories found. Create your first subcategory!</p>
+          <div class="empty-icon">📑</div>
+          <p>No subcategories found</p>
+          <p class="empty-hint">Create your first subcategory to organize categories</p>
+          <button @click="openCreateSubcategoryModal" class="btn-primary">
+            <span class="icon">+</span> Create Subcategory
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Category Create/Edit Modal -->
     <div v-if="showCategoryModal" class="modal-overlay" @click="closeCategoryModal">
-      <div class="modal-content" @click.stop>
+      <div class="modal-content large" @click.stop>
         <div class="modal-header">
           <h3>{{ isEditMode ? 'Edit Category' : 'Create New Category' }}</h3>
           <button @click="closeCategoryModal" class="btn-close">✕</button>
         </div>
 
-        <form @submit.prevent="submitCategoryForm" class="modal-form">
-          <!-- Image Upload -->
+        <form @submit.prevent="submitCategoryForm" class="modal-body">
+          <!-- Category Image Upload -->
           <div class="form-group">
             <label>Category Image <span class="required">*</span></label>
-            <input type="file" @change="handleFileChange" accept="image/*" :required="!isEditMode" ref="fileInput" />
-            <small>Recommended size: 300x300px</small>
-
-            <!-- Image Preview -->
-            <div v-if="imagePreview" class="image-preview">
-              <img :src="imagePreview" alt="Preview" />
+            <div class="image-upload-area">
+              <div v-if="imagePreview" class="image-preview">
+                <img :src="imagePreview" alt="Preview" />
+                <button type="button" @click="removeImage" class="remove-image">
+                  ✕
+                </button>
+              </div>
+              <label v-else for="category-image-input" class="upload-placeholder">
+                <div class="upload-icon">📸</div>
+                <span>Click to upload category image</span>
+                <span class="upload-hint">Recommended size: 300x300px (Max 5MB)</span>
+              </label>
+              <input
+                id="category-image-input"
+                type="file"
+                accept="image/*"
+                @change="handleFileChange"
+                style="display: none"
+                ref="fileInput"
+                :required="!isEditMode"
+              />
             </div>
+            <p v-if="isEditMode" class="hint-text">Leave empty to keep current image</p>
           </div>
 
           <!-- Category Name -->
           <div class="form-group">
             <label>Category Name <span class="required">*</span></label>
-            <input type="text" v-model="categoryFormData.name" placeholder="Enter category name" required
-              minlength="3" />
-            <small>Minimum 3 characters</small>
+            <input
+              type="text"
+              v-model="categoryFormData.name"
+              placeholder="Enter category name"
+              required
+              minlength="3"
+              class="form-input"
+            />
+            <p class="hint-text">Minimum 3 characters</p>
           </div>
 
           <!-- Error Message -->
@@ -147,12 +191,12 @@
           </div>
 
           <!-- Form Actions -->
-          <div class="form-actions">
-            <button type="button" @click="closeCategoryModal" class="btn-secondary">
+          <div class="modal-actions">
+            <button type="button" @click="closeCategoryModal" class="btn-text">
               Cancel
             </button>
             <button type="submit" class="btn-primary" :disabled="submitting">
-              {{ submitting ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }}
+              {{ submitting ? 'Saving...' : (isEditMode ? 'Update Category' : 'Create Category') }}
             </button>
           </div>
         </form>
@@ -167,11 +211,11 @@
           <button @click="closeSubcategoryModal" class="btn-close">✕</button>
         </div>
 
-        <form @submit.prevent="submitSubcategoryForm" class="modal-form">
+        <form @submit.prevent="submitSubcategoryForm" class="modal-body">
           <!-- Parent Category -->
           <div class="form-group">
             <label>Parent Category <span class="required">*</span></label>
-            <select v-model="subcategoryFormData.categoryId" required>
+            <select v-model="subcategoryFormData.categoryId" required class="form-input">
               <option value="">Select a category</option>
               <option v-for="category in categories" :key="category.id" :value="category.id">
                 {{ category.name }}
@@ -182,8 +226,14 @@
           <!-- Subcategory Name -->
           <div class="form-group">
             <label>Subcategory Name <span class="required">*</span></label>
-            <input type="text" v-model="subcategoryFormData.name" placeholder="Enter subcategory name" required
-              minlength="3" />
+            <input
+              type="text"
+              v-model="subcategoryFormData.name"
+              placeholder="Enter subcategory name"
+              required
+              minlength="3"
+              class="form-input"
+            />
           </div>
 
           <!-- Error Message -->
@@ -192,12 +242,12 @@
           </div>
 
           <!-- Form Actions -->
-          <div class="form-actions">
-            <button type="button" @click="closeSubcategoryModal" class="btn-secondary">
+          <div class="modal-actions">
+            <button type="button" @click="closeSubcategoryModal" class="btn-text">
               Cancel
             </button>
             <button type="submit" class="btn-primary" :disabled="submitting">
-              {{ submitting ? 'Creating...' : 'Create' }}
+              {{ submitting ? 'Creating...' : 'Create Subcategory' }}
             </button>
           </div>
         </form>
@@ -214,15 +264,31 @@
 
         <div class="modal-body details-body">
           <div class="details-section">
-            <img :src="getCategoryImageUrl(selectedCategory?.imagePath)" :alt="selectedCategory?.name"
-              class="details-image" />
+            <div class="details-image-wrapper">
+              <img
+                :src="getCategoryImageUrl(selectedCategory?.imagePath)"
+                :alt="selectedCategory?.name"
+                class="details-image"
+              />
+            </div>
           </div>
 
           <div class="details-section">
             <h4>Information</h4>
-            <p><strong>Name:</strong> {{ selectedCategory?.name }}</p>
-            <p><strong>Products:</strong> {{ selectedCategory?.products?.length || 0 }}</p>
-            <p><strong>Subcategories:</strong> {{ selectedCategory?.subCategories?.length || 0 }}</p>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Name:</span>
+                <span class="info-value">{{ selectedCategory?.name }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Products:</span>
+                <span class="info-value">{{ selectedCategory?.products?.length || 0 }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Subcategories:</span>
+                <span class="info-value">{{ selectedCategory?.subCategories?.length || 0 }}</span>
+              </div>
+            </div>
           </div>
 
           <div v-if="selectedCategory?.subCategories?.length" class="details-section">
@@ -244,16 +310,17 @@
           <h3>Confirm Delete</h3>
           <button @click="showDeleteModal = false" class="btn-close">✕</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body text-center">
+          <div class="warning-icon">⚠️</div>
           <p>Are you sure you want to delete this {{ deleteType }}?</p>
           <p class="delete-warning">This action cannot be undone.</p>
         </div>
-        <div class="form-actions">
-          <button @click="showDeleteModal = false" class="btn-secondary">
+        <div class="modal-actions">
+          <button @click="showDeleteModal = false" class="btn-text">
             Cancel
           </button>
           <button @click="executeDelete" class="btn-danger" :disabled="submitting">
-            {{ submitting ? 'Deleting...' : 'Delete' }}
+            {{ submitting ? 'Deleting...' : 'Delete Permanently' }}
           </button>
         </div>
       </div>
@@ -377,6 +444,14 @@ export default {
       }
     },
 
+    removeImage() {
+      this.imagePreview = null;
+      this.selectedFile = null;
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.value = '';
+      }
+    },
+
     async submitCategoryForm() {
       this.errorMessage = '';
 
@@ -435,12 +510,8 @@ export default {
     closeCategoryModal() {
       this.showCategoryModal = false;
       this.categoryFormData = { name: '' };
-      this.imagePreview = null;
-      this.selectedFile = null;
+      this.removeImage();
       this.errorMessage = '';
-      if (this.$refs.fileInput) {
-        this.$refs.fileInput.value = '';
-      }
     },
 
     // Subcategory CRUD
@@ -518,491 +589,170 @@ export default {
 </script>
 
 <style scoped>
+/* --- PAGE LAYOUT --- */
 .admin-categories {
+  padding: 2rem;
   max-width: 1400px;
-}
-
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 30px;
-  border-bottom: 2px solid #eee;
-}
-
-.tab {
-  padding: 12px 24px;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  color: #666;
-  transition: all 0.2s;
-}
-
-.tab:hover {
-  color: #0990ff;
-}
-
-.tab.active {
-  color: #0990ff;
-  border-bottom-color: #0990ff;
-}
-
-.tab-content {
-  animation: fadeIn 0.3s;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  margin: 0 auto;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+  align-items: flex-start;
+  margin-bottom: 2rem;
 }
 
-.page-header h2 {
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1e293b;
   margin: 0;
-  font-size: 20px;
-  color: #333;
 }
 
-.btn-primary {
-  background: #0990ff;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
+.page-subtitle {
+  color: #64748b;
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
 }
 
-.btn-primary:hover {
-  background: #0077ee;
-}
-
-.btn-primary:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.loading {
-  text-align: center;
-  padding: 60px 20px;
-  color: #666;
-}
-
-/* Categories Grid */
-.categories-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.category-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  transition: transform 0.2s;
-}
-
-.category-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.category-image {
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-  background: #f5f5f5;
-}
-
-.category-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.category-info {
-  padding: 20px;
-}
-
-.category-info h3 {
-  margin: 0 0 12px 0;
-  font-size: 18px;
-  color: #333;
-}
-
-.category-stats {
-  display: flex;
-  gap: 15px;
-}
-
-.stat {
+.header-actions {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  color: #666;
+  gap: 0.75rem;
 }
 
-.stat-icon {
-  font-size: 16px;
-}
-
-.category-actions {
-  padding: 0 20px 20px;
-  display: flex;
-  gap: 8px;
-}
-
-.btn-view,
-.btn-edit,
-.btn-delete {
-  flex: 1;
-  padding: 8px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.btn-view {
-  background: #e8f5e9;
-  color: #2e7d32;
-}
-
-.btn-view:hover {
-  background: #c8e6c9;
-}
-
-.btn-edit {
-  background: #f0f2ff;
-  color: #0990ff;
-}
-
-.btn-edit:hover {
-  background: #e0e4ff;
-}
-
-.btn-delete {
-  background: #fff5f5;
-  color: #dc3545;
-}
-
-.btn-delete:hover {
-  background: #ffe5e5;
-}
-
-/* Subcategories Table */
-.subcategories-table-container {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.subcategories-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.subcategories-table thead {
-  background: #f8f9fa;
-}
-
-.subcategories-table th {
-  padding: 15px 20px;
-  text-align: left;
+.badge {
+  background: #e2e8f0;
+  color: #475569;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #333;
-  border-bottom: 2px solid #eee;
 }
 
-.subcategories-table td {
-  padding: 15px 20px;
-  border-bottom: 1px solid #f0f0f0;
-  color: #666;
+/* --- TABS --- */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #e2e8f0;
 }
 
-.subcategories-table tbody tr:hover {
-  background: #f8f9fa;
-}
-
-.category-badge {
-  display: inline-block;
-  background: #e3f2fd;
-  color: #0990ff;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.btn-delete-small {
-  background: #fff5f5;
-  color: #dc3545;
+.tab {
+  padding: 0.875rem 1.5rem;
+  background: none;
   border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
+  border-bottom: 3px solid transparent;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.95rem;
   font-weight: 500;
+  color: #64748b;
   transition: all 0.2s;
-}
-
-.btn-delete-small:hover {
-  background: #ffe5e5;
-}
-
-.empty-state {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 60px 20px;
-  color: #999;
-  background: white;
-  border-radius: 12px;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
+  gap: 0.5rem;
 }
 
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
+.tab-icon {
+  font-size: 1.1rem;
 }
 
-.modal-small {
-  max-width: 450px;
+.tab:hover {
+  color: #0d6efd;
+  background: #f8fafc;
 }
 
-.modal-large {
-  max-width: 800px;
+.tab.active {
+  color: #0d6efd;
+  border-bottom-color: #0d6efd;
+  background: #f0f7ff;
 }
 
-.modal-header {
+.tab-content {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- SECTION HEADER --- */
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 1.5rem;
 }
 
-.modal-header h3 {
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
   margin: 0;
-  font-size: 20px;
 }
 
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #999;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-}
-
-.btn-close:hover {
-  color: #333;
-}
-
-.modal-form,
-.modal-body {
-  padding: 24px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #333;
-}
-
-.required {
-  color: #dc3545;
-}
-
-.form-group input[type="text"],
-.form-group input[type="file"],
-.form-group select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.form-group select {
-  cursor: pointer;
-}
-
-.form-group small {
-  display: block;
-  margin-top: 6px;
-  color: #666;
-  font-size: 12px;
-}
-
-.image-preview {
-  margin-top: 15px;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #ddd;
-  max-width: 200px;
-}
-
-.image-preview img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.error-message {
-  background: #fee;
-  color: #c33;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  border-left: 4px solid #c33;
-}
-
-.form-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  padding: 20px 24px;
-  border-top: 1px solid #eee;
-}
-
-.btn-secondary {
-  background: white;
-  border: 1px solid #ddd;
-  color: #333;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.btn-secondary:hover {
-  background:
-    #f8f9fa;
-}
-
-.btn-danger {
-  background:
-    #dc3545;
+/* --- BUTTONS --- */
+.btn-primary {
+  background: #0d6efd;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+  font-size: 0.95rem;
 }
 
-.btn-danger:hover {
-  background:
-    #c82333;
+.btn-primary:hover {
+  background: #0b5ed7;
 }
 
-.btn-danger:disabled {
-  background: #ccc;
+.btn-primary:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.delete-warning {
-  color:
-    #dc3545;
-  font-weight: 500;
-  margin-top: 10px;
-}
-
-/* Details Modal */
-.details-body {
-  display: grid;
-  gap: 20px;
-}
-
-.details-section h4 {
-  margin: 0 0 15px 0;
-  color: #333;
-  font-size: 16px;
-}
-
-.details-section p {
-  margin: 8px 0;
-  color: #666;
-}
-
-.details-image {
-  width: 100%;
-  max-width: 300px;
-  border-radius: 8px;
-}
-
-.subcategory-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.tag {
-  background:
-    #e3f2fd;
-  color:
-    #0990ff;
-  padding: 6px 12px;
+/* --- LOADING STATE --- */
+.loading-state {
+  text-align: center;
+  padding: 5rem 2rem;
+  background: white;
   border-radius: 12px;
-  font-size: 13px;
+  color: #64748b;
 }
 
-/* Categories Showcase (Updated Design) */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0d6efd;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- CATEGORIES SHOWCASE --- */
 .categories-showcase {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .category-showcase-card {
@@ -1012,19 +762,19 @@ export default {
   align-items: center;
   justify-content: center;
   background: white;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #e2e8f0;
   border-radius: 12px;
-  padding: 24px 16px;
+  padding: 1.75rem 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-height: 180px;
+  min-height: 200px;
   overflow: hidden;
 }
 
 .category-showcase-card:hover {
-  border-color: #0990ff;
+  border-color: #0d6efd;
   transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(9, 144, 255, 0.25);
+  box-shadow: 0 8px 20px rgba(13, 110, 253, 0.15);
 }
 
 .category-showcase-card:hover .category-hover-actions {
@@ -1037,77 +787,78 @@ export default {
   flex-direction: column;
   align-items: center;
   width: 100%;
+  z-index: 1;
 }
 
 .icon-container {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
-  background: #f8f9fa;
+  margin-bottom: 1rem;
+  background: #f8fafc;
   border-radius: 12px;
-  padding: 12px;
+  padding: 0.875rem;
+  border: 1px solid #e2e8f0;
 }
 
 .icon-container img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(195deg) brightness(98%) contrast(105%);
 }
 
 .category-name {
-  font-size: 15px;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: #333;
+  color: #1e293b;
   text-align: center;
-  margin: 0 0 8px 0;
+  margin: 0 0 0.75rem 0;
   line-height: 1.4;
 }
 
 .category-stats-inline {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 0.5rem;
 }
 
 .stat-badge {
-  background: #f0f7ff;
-  color: #0990ff;
-  font-size: 11px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.75rem;
   font-weight: 500;
-  padding: 4px 8px;
+  padding: 0.25rem 0.625rem;
   border-radius: 12px;
   white-space: nowrap;
 }
 
-/* Hover Actions Overlay */
+/* --- HOVER ACTIONS --- */
 .category-hover-actions {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(9, 144, 255, 0.95);
+  background: rgba(13, 110, 253, 0.96);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 0.875rem;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
   border-radius: 10px;
+  z-index: 2;
 }
 
 .action-btn {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 1.15rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1131,80 +882,504 @@ export default {
   background: #ffebee;
 }
 
-/* Empty State Modern */
-.empty-state-modern {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 80px 20px;
+/* --- TABLE STYLES --- */
+.table-container {
   background: white;
   border-radius: 12px;
-  border: 2px dashed #e0e0e0;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table thead {
+  background: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.admin-table th {
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  color: #475569;
+  text-align: left;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.admin-table td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: #334155;
+}
+
+.admin-table tbody tr {
+  transition: background 0.2s;
+}
+
+.admin-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.id-cell {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.subcategory-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+.category-badge {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.btn-action {
+  background: none;
+  border: 1px solid #cbd5e1;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.btn-action.delete {
+  color: #dc3545;
+  background: #fff5f5;
+  border-color: #fecaca;
+}
+
+.btn-action.delete:hover {
+  background: #fee2e2;
+  border-color: #dc3545;
+}
+
+/* --- EMPTY STATE --- */
+.empty-state {
+  padding: 5rem 2rem;
+  text-align: center;
+  color: #64748b;
+  background: white;
+  border-radius: 12px;
+  border: 2px dashed #e2e8f0;
+  grid-column: 1 / -1;
 }
 
 .empty-icon {
-  font-size: 64px;
-  margin-bottom: 20px;
-  opacity: 0.3;
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.4;
 }
 
-.empty-state-modern p {
-  color: #999;
-  font-size: 16px;
-  margin: 0 0 20px 0;
+.empty-state p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 500;
 }
 
-/* Responsive */
+.empty-hint {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
+}
+
+/* --- MODAL STYLES --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content.large {
+  max-width: 700px;
+}
+
+.modal-content.modal-small {
+  max-width: 450px;
+}
+
+.modal-content.modal-large {
+  max-width: 800px;
+}
+
+.modal-header {
+  padding: 1.5rem 1.75rem;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #64748b;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-close:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.modal-body {
+  padding: 1.75rem;
+}
+
+/* --- IMAGE UPLOAD --- */
+.image-upload-area {
+  margin-top: 0.5rem;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #94a3b8;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.upload-placeholder:hover {
+  border-color: #0d6efd;
+  color: #0d6efd;
+  background: #f0f7ff;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.upload-placeholder span {
+  display: block;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+.upload-hint {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 0.5rem;
+}
+
+.image-preview {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: background 0.2s;
+}
+
+.remove-image:hover {
+  background: #dc3545;
+}
+
+/* --- FORM STYLES --- */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.required {
+  color: #dc3545;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.form-input::placeholder {
+  color: #cbd5e1;
+}
+
+.hint-text {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.error-message {
+  background: #fee2e2;
+  color: #dc3545;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #dc3545;
+}
+
+/* --- MODAL ACTIONS --- */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem 1.75rem;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 1.5rem;
+  margin-left: -1.75rem;
+  margin-right: -1.75rem;
+  margin-bottom: -1.75rem;
+}
+
+.btn-text {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-text:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover {
+  background: #bb2d3b;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --- DETAILS MODAL --- */
+.text-center {
+  text-align: center;
+}
+
+.warning-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.delete-warning {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+}
+
+.details-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.details-section h4 {
+  margin: 0 0 1rem 0;
+  color: #1e293b;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.details-image-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.details-image {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #475569;
+}
+
+.info-value {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.subcategory-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 0.5rem 0.875rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* --- RESPONSIVE --- */
 @media (max-width: 768px) {
   .categories-showcase {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
   }
 
   .category-showcase-card {
-    padding: 20px 12px;
-    min-height: 160px;
+    padding: 1.5rem 0.75rem;
+    min-height: 180px;
   }
 
   .icon-container {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
   }
 
   .category-name {
-    font-size: 13px;
+    font-size: 0.875rem;
   }
 
   .stat-badge {
-    font-size: 10px;
-    padding: 3px 6px;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
   }
 
   .action-btn {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .categories-showcase {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 12px;
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
   }
 
-  .category-showcase-card {
-    padding: 16px 8px;
-    min-height: 140px;
+  .page-header {
+    flex-direction: column;
+    gap: 1rem;
   }
 
-  .icon-container {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 8px;
+  .admin-table {
+    font-size: 0.85rem;
   }
 
-  .category-name {
-    font-size: 12px;
+  .admin-table th,
+  .admin-table td {
+    padding: 0.75rem;
   }
 }
 </style>

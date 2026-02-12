@@ -20,7 +20,7 @@ import { Patch } from '@nestjs/common';
 import { UpdateProductDto } from './dto/update-product.dto';
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService) { }
 
   @Get()
   findAll() {
@@ -40,7 +40,7 @@ export class ProductsController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './uploads/products', // Make sure to create this folder!
+        destination: './uploads/products',
         filename: (req, file, callback) => {
           const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
           callback(null, `${uniqueName}${extname(file.originalname)}`);
@@ -48,6 +48,14 @@ export class ProductsController {
       }),
     }),
   )
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @UploadedFile() file: any,
+  ) {
+    // Add a check to prevent "filename of undefined"
+    const imageFilename = file ? file.filename : null;
+    return this.productsService.create(createProductDto, imageFilename);
+  }
   @Patch(':id')
   @UseInterceptors(
     FileInterceptor('image', {
@@ -67,12 +75,5 @@ export class ProductsController {
   ) {
     const imageFilename = file ? file.filename : null;
     return this.productsService.update(+id, updateProductDto, imageFilename);
-  }
-
-  create(
-    @Body() createProductDto: CreateProductDto,
-    @UploadedFile() file: any,
-  ) {
-    return this.productsService.create(createProductDto, file.filename);
   }
 }
