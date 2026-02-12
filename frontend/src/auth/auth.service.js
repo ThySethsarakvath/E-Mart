@@ -1,5 +1,6 @@
 import apiClient from '../service/api';
-
+import cartService from '../service/cart.js';      
+import wishlistService from '../service/wishlist.js';
 export default {
   async register(userData) {
     try {
@@ -29,7 +30,12 @@ export default {
       localStorage.setItem('refreshToken', refreshToken);
       localStorage.setItem('user', JSON.stringify(user));
 
+
+      cartService.reloadCart();
+      wishlistService.reloadWishlist();
+      
       return response.data;
+
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -47,6 +53,9 @@ export default {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+
+      cartService.reloadCart();
+      wishlistService.reloadWishlist();
     }
   },
 

@@ -1,11 +1,25 @@
 import { reactive, computed } from 'vue';
 
+
+const getStorageKey = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  return user ? `wishlist_items_${user.id}` : 'wishlist_items_guest';
+};
+
+
 const state = reactive({
-  items: JSON.parse(localStorage.getItem('wishlistItems')) || [],
+  items: JSON.parse(localStorage.getItem(getStorageKey())) || [],
 });
 
 const saveToLocalStorage = () => {
-  localStorage.setItem('wishlistItems', JSON.stringify(state.items));
+  localStorage.setItem(getStorageKey(), JSON.stringify(state.items));
+};
+
+
+const reloadWishlist = () => {
+
+  state.items = JSON.parse(localStorage.getItem(getStorageKey())) || [];
 };
 
 const addToWishlist = (product) => {
@@ -24,18 +38,22 @@ const removeFromWishlist = (productId) => {
   }
 };
 
+const clearWishlist = () => {
+  state.items = [];
+  localStorage.removeItem(getStorageKey());
+};
+
 const isInWishlist = (productId) => {
   return state.items.some((item) => item.id === productId);
 };
 
-// ⚠️ CRITICAL SECTION: This must return TRUE or FALSE
 const toggleWishlist = (product) => {
   if (isInWishlist(product.id)) {
     removeFromWishlist(product.id);
-    return false; // MEANS: "I Removed it" (No Pop-up)
+    return false; 
   } else {
     addToWishlist(product);
-    return true;  // MEANS: "I Added it" (SHOW PINK POP-UP!)
+    return true; 
   }
 };
 
@@ -47,5 +65,7 @@ export default {
   removeFromWishlist,
   isInWishlist,
   toggleWishlist,
+  reloadWishlist,
+  clearWishlist,   
   totalItems,
 };

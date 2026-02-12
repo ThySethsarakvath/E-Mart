@@ -211,7 +211,7 @@ const getImgUrl = (path) => {
 }
 .cart-bottom { display: flex; justify-content: flex-end; }
 .cart-total-box { 
-  width: 420px; background: white; border: 2px solid #000; 
+  width: 420px; background: white; border: 2px solid #00000000; 
   padding: 30px; border-radius: 4px; 
 }
 .cart-total-box h3 { margin-top: 0; margin-bottom: 25px; font-size: 20px; }
