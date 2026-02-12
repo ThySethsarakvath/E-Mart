@@ -41,7 +41,8 @@ export class GatewayController {
         path.startsWith('/promotions') ||
         path.startsWith('/orders') ||
         path.startsWith('/categories') ||
-        path.startsWith('/payments') // ✅ NEW PAYMENT SUPPORT
+        path.startsWith('/payments') ||
+        path.startsWith('/orders')
       ) {
         service = 'order-worker';
       } else {
