@@ -1,11 +1,14 @@
 <script>
-import HeaderComponent from './components/HeaderComponent.vue'
+import HeaderComponent from './components/HeaderComponent.vue';
 import FooterComponent from './components/FooterComponent.vue';
+import CartToast from './components/CartToast.vue'; // 
+
 export default {
   name: 'App',
   components: {
     HeaderComponent,
     FooterComponent,
+    CartToast, // 
   },
 }
 </script>
@@ -14,6 +17,7 @@ export default {
   <div id="app">
     <HeaderComponent v-if="!$route.meta.hideHeader" />
 
+    <CartToast />
     <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">
         <component :is="Component" />
@@ -49,8 +53,4 @@ body {
 .fade-leave-to {
   opacity: 0;
 }
-
-/* .home {
-  padding: 20px;
-} */
 </style>

@@ -14,6 +14,10 @@ import AdminCategory from '@/components/admin/AdminCategory.vue'
 import AdminProduct from '@/components/admin/AdminProduct.vue'
 import AdminPromotion from '@/components/admin/AdminPromotion.vue'
 
+import CartView from '../views/CartView.vue';
+import ContactView from '../views/ContactView.vue';
+import WishlistView from '../views/WishlistView.vue'
+import ProductDetailView from '../views/ProductDetailView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -24,11 +28,31 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
+    path: '/wishlist',
+    name: 'wishlist',
+    component: WishlistView
+    },
+    {
+    path: '/product/:id',
+    name: 'product-detail',
+    component: ProductDetailView
+    },
+    {
       path: '/about',
       name: 'about',
       component: AboutView,
       meta: { requiresAuth: false }
     },
+    {
+    path: '/cart',
+    name: 'cart',
+    component: CartView
+    },
+    {
+    path: '/contact',
+    name: 'contact',
+    component: ContactView
+  },
     {
       path: '/category/:id',
       name: 'category-products',

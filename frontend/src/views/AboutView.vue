@@ -1,70 +1,75 @@
 <script>
+import BreadcrumbComponent from '@/components/BreadcrumbComponent.vue';
+
 export default {
-  name: 'AboutView'
+  name: 'AboutView',
+  components: {
+    BreadcrumbComponent
+  }
 }
 </script>
-
 <template>
-  <div class="mission-hero">
-    <div class="hero-content">
-      <h1>Our Mission and Goals</h1>
-      <p>
-        Our mission is to achieve meaningful goals by delivering user-friendly
-        solutions, supporting our community, and growing through innovation
-        and collaboration.
-      </p>
-    </div>
-  </div>
-
-  <div class="about-container">
-    <div class="about-section">
-      <h1>About Us</h1>
-      <p>
-        We are students of the Institute of Technology of Cambodia (ITC), developing
-        this project for our Internet Programming class.
-      </p>
-      <p>
-        Our project uses E-Mart as a case study to enhance sales performance and
-        improve customer convenience by making shopping easier, faster, and more accessible.
-      </p>
-    </div>
-
-    <div class="team-section">
-      <h2>Our Team</h2>
-      <div class="team-members">
-        
-        <div class="member-card">
-          <img src="@/assets/sitha.png" alt="Huoth Sitha" class="member-img">
-          <h3>Huoth Sitha</h3>
-          <p class="role">Handles client-side functionality</p>
-          
-          <div class="social-links">
-            <a href="https://www.facebook.com/sitha.huoth/" target="_blank"><img src="@/assets/icon/facebook.png" alt="Facebook"></a>
-            <a href="mailto:huothsitha@gmail.com"><img src="@/assets/icon/email.png" alt="Email"></a>
-            <a href="https://t.me/hsitha9" target="_blank"><img src="@/assets/icon/telegram.png" alt="Telegram"></a>
-            <a href="https://www.linkedin.com/in/sitha-huoth" target="_blank"><img src="@/assets/icon/linkedin.png" alt="LinkedIn"></a>
-            <a href="https://huothsithaportfolio.netlify.app/" target="_blank"><img src="@/assets/icon/portfolio.png" alt="Portfolio"></a>
-          </div>
-        </div>
-
-        <div class="member-card">
-          <img src="@/assets/vath.png" alt="Thy Sethasarakvath" class="member-img">
-          <h3>Thy Sethasarakvath</h3>
-          <p class="role">Manages server-side logic and database</p>
-          
-          <div class="social-links">
-            <a href="#" target="_blank"><img src="@/assets/icon/facebook.png" alt="Facebook"></a>
-            <a href="mailto:thy.sethasarakvath7547@gmail.com"><img src="@/assets/icon/email.png" alt="Email"></a>
-            <a href="https://t.me/Sethasarakvath" target="_blank"><img src="@/assets/icon/telegram.png" alt="Telegram"></a>
-            <a href="#" target="_blank"><img src="@/assets/icon/linkedin.png" alt="LinkedIn"></a>
-            <a href="#" target="_blank"><img src="@/assets/icon/portfolio.png" alt="Portfolio"></a>
-          </div>
-        </div>
-
+  <div class="about-page-wrapper">
+    
+    <div class="mission-hero">
+      <div class="hero-content">
+        <h1>Our Mission and Goals</h1>
+        <p>
+          Our mission is to achieve meaningful goals by delivering user-friendly
+          solutions, supporting our community, and growing through innovation
+          and collaboration.
+        </p>
       </div>
     </div>
-  </div>
-</template>
+
+    <div class="about-container">
+      <BreadcrumbComponent />
+
+      <div class="about-section">
+        <h1>About Us</h1>
+        <p>
+          We are students of the Institute of Technology of Cambodia (ITC), developing
+          this project for our Internet Programming class.
+        </p>
+        <p>
+          Our project uses E-Mart as a case study to enhance sales performance and
+          improve customer convenience by making shopping easier, faster, and more accessible.
+        </p>
+      </div>
+
+      <div class="team-section">
+        <h2>Our Team</h2>
+        <div class="team-members">
+          <div class="member-card">
+            <img src="@/assets/sitha.png" alt="Huoth Sitha" class="member-img">
+            <h3>Huoth Sitha</h3>
+            <p class="role">Handles client-side functionality</p>
+            <div class="social-links">
+              <a href="https://www.facebook.com/sitha.huoth/" target="_blank"><img src="@/assets/icon/facebook.png" alt="Facebook"></a>
+              <a href="mailto:huothsitha@gmail.com"><img src="@/assets/icon/email.png" alt="Email"></a>
+              <a href="https://t.me/hsitha9" target="_blank"><img src="@/assets/icon/telegram.png" alt="Telegram"></a>
+              <a href="https://www.linkedin.com/in/sitha-huoth" target="_blank"><img src="@/assets/icon/linkedin.png" alt="LinkedIn"></a>
+              <a href="https://huothsithaportfolio.netlify.app/" target="_blank"><img src="@/assets/icon/portfolio.png" alt="Portfolio"></a>
+            </div>
+          </div>
+
+          <div class="member-card">
+            <img src="@/assets/vath.png" alt="Thy Sethasarakvath" class="member-img">
+            <h3>Thy Sethasarakvath</h3>
+            <p class="role">Manages server-side logic and database</p>
+            <div class="social-links">
+              <a href="#" target="_blank"><img src="@/assets/icon/facebook.png" alt="Facebook"></a>
+              <a href="mailto:thy.sethasarakvath7547@gmail.com"><img src="@/assets/icon/email.png" alt="Email"></a>
+              <a href="https://t.me/Sethasarakvath" target="_blank"><img src="@/assets/icon/telegram.png" alt="Telegram"></a>
+              <a href="#" target="_blank"><img src="@/assets/icon/linkedin.png" alt="LinkedIn"></a>
+              <a href="#" target="_blank"><img src="@/assets/icon/portfolio.png" alt="Portfolio"></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div> </template>
 
 <style scoped>
 
