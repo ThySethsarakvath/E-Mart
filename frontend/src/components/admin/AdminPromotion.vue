@@ -613,7 +613,6 @@ export default {
 }
 
 .rating-cell {
-  display: flex;
   align-items: center;
   gap: 0.25rem;
   font-weight: 500;

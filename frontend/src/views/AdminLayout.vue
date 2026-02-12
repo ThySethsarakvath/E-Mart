@@ -30,9 +30,6 @@
         <router-link to="/admin/users" class="nav-item">
           <span class="icon">👥</span> Users
         </router-link>
-        <router-link to="/admin/settings" class="nav-item">
-          <span class="icon">⚙️</span> Settings
-        </router-link>
       </nav>
 
       <!-- Admin Account Section -->
@@ -86,7 +83,6 @@ export default {
         'admin-promotions': 'Promotions',
         'admin-orders': 'Order Management',
         'admin-users': 'User Management',
-        'admin-settings': 'Settings'
       };
       return titles[routeName] || 'Admin Panel';
     }
