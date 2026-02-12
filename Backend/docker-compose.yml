@@ -27,6 +27,8 @@ services:
       - /app/node_modules
     depends_on:
       - rabbitmq
+    env_file:
+      - .env
 
   order-worker:
     build:
@@ -49,6 +51,8 @@ services:
     depends_on:
       - rabbitmq
       - emart-db
+    env_file:
+      - .env
 
   auth-service:
     build:

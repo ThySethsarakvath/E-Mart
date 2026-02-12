@@ -45,11 +45,14 @@ export class ProxyService {
 
     const url = `${baseUrl}${path}`;
 
+    // ===========================
+    // CLEAN HOP-BY-HOP HEADERS
+    // ===========================
     const cleanHeaders = { ...headers };
 
     delete cleanHeaders.host;
     delete cleanHeaders.connection;
-    delete cleanHeaders['content-length']; // VERY IMPORTANT
+    delete cleanHeaders['content-length']; // critical for multipart
 
     const isMultipart = headers['content-type']?.includes(
       'multipart/form-data',
@@ -65,8 +68,11 @@ export class ProxyService {
       maxContentLength: Infinity,
     };
 
-    // ✅ stream multipart untouched
+    // ===========================
+    // BODY HANDLING
+    // ===========================
     if (isMultipart && rawRequest) {
+      // stream raw request for file uploads
       config.data = rawRequest;
     } else if (['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
       config.data = body;
@@ -76,9 +82,11 @@ export class ProxyService {
       const response = await firstValueFrom(this.httpService.request(config));
       return response.data;
     } catch (err: any) {
+      console.error('PROXY ERROR FULL:', err.response?.data || err.message);
+
       throw {
         status: err.response?.status || 500,
-        message: err.response?.data?.message || err.message,
+        message: err.response?.data || err.message,
         error: err.response?.data,
       };
     }
