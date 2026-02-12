@@ -162,8 +162,9 @@
 </template>
 
 <script>
-import cartService from '../service/cart.js';
+ import cartService from '../service/cart.js';
 import authService from '../auth/auth.service.js';
+import api from '../service/api.js'; // Ensure you import your axios instance
 import { loadStripe } from '@stripe/stripe-js';
 
 export default {
@@ -178,7 +179,7 @@ export default {
         phone: '',
         email: ''
       },
-      paymentMethod: 'cod', // Default
+      paymentMethod: 'cod',
       loading: false,
       stripe: null,
       elements: null,
@@ -187,13 +188,8 @@ export default {
   },
   watch: {
     deliveryMethod(newVal) {
-      if (newVal === 'pickup') {
-        this.paymentMethod = 'pay_store';
-      } else {
-        this.paymentMethod = 'cod';
-      }
+      this.paymentMethod = newVal === 'pickup' ? 'pay_store' : 'cod';
     },
-    // Initialize Stripe when user selects the option
     paymentMethod(newVal) {
       if (newVal === 'stripe') {
         this.$nextTick(() => {
@@ -203,20 +199,15 @@ export default {
     }
   },
   computed: {
-    cartItems() {
-      return cartService.state.items;
-    },
+    cartItems() { return cartService.state.items; },
     cartTotal() {
       return cartService.state.items.reduce((total, item) => total + (item.price * item.quantity), 0);
     },
     shippingCost() {
-      if (this.deliveryMethod === 'pickup') return 0;
-      if (this.cartTotal >= 20) return 0;
+      if (this.deliveryMethod === 'pickup' || this.cartTotal >= 20) return 0;
       return 2.00;
     },
-    grandTotal() {
-      return this.cartTotal + this.shippingCost;
-    }
+    grandTotal() { return this.cartTotal + this.shippingCost; }
   },
   created() {
     const user = authService.getCurrentUser();
@@ -230,70 +221,77 @@ export default {
       return `http://localhost:4000/uploads/products/${path}`;
     },
     async initStripe() {
-      if (this.card) return; // Prevent re-initialization
-
-      // ⚠️ REPLACE THIS WITH YOUR STRIPE PUBLISHABLE KEY (pk_test_...)
-      this.stripe = await loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx'); 
+      if (this.card) return;
+      this.stripe = await loadStripe('pk_test_51Szt2d3U76MjgjVk9BH58YmdegmdnHSXuF2o1nVWVOhAP3VomqXv1gK6eNjypM1vpFMCqq8WtfAJmSBj3JAqJQww00pXdFucns'); 
       this.elements = this.stripe.elements();
       
-      const style = {
-        base: {
-          color: '#32325d',
-          fontFamily: '"Quicksand", sans-serif',
-          fontSmoothing: 'antialiased',
-          fontSize: '16px',
-          '::placeholder': { color: '#aab7c4' }
-        },
-        invalid: { color: '#fa755a', iconColor: '#fa755a' }
-      };
-
-      this.card = this.elements.create('card', { style });
+      this.card = this.elements.create('card', {
+        style: {
+          base: { fontSize: '16px', color: '#32325d', fontFamily: '"Quicksand", sans-serif' }
+        }
+      });
       this.card.mount('#card-element');
     },
     async handlePlaceOrder() {
       if (this.cartItems.length === 0) return alert('Your cart is empty!');
       if (!this.form.phone) return alert('Phone number is required.');
-
-      if (this.deliveryMethod === 'delivery') {
-        if (!this.form.address || !this.form.city) return alert('Please fill in your address.');
-      }
-
+      
       this.loading = true;
 
-      // 1. Handle Stripe Payment
-      if (this.paymentMethod === 'stripe') {
-        // Logic: Call your backend to get clientSecret, then confirmCardPayment
-        // For now, we simulate basic validation
-        const result = await this.stripe.createToken(this.card);
-        if (result.error) {
-           alert(result.error.message);
-           this.loading = false;
-           return;
+      try {
+        if (this.paymentMethod === 'stripe') {
+          // 1. Request a Payment Intent from your NestJS Backend
+          const response = await api.post('/payments/create-intent', {
+            amount: this.grandTotal 
+          });
+          
+          const { clientSecret } = response.data;
+
+          // 2. Confirm the payment on the frontend
+          const result = await this.stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+              card: this.card,
+              billing_details: {
+                name: this.form.firstName,
+                email: this.form.email,
+                phone: this.form.phone
+              }
+            }
+          });
+
+          if (result.error) {
+            alert(result.error.message);
+            this.loading = false;
+            return;
+          }
+
+          if (result.paymentIntent.status === 'succeeded') {
+            console.log('Payment Successful:', result.paymentIntent.id);
+          }
         }
-        console.log('Stripe Token:', result.token);
-        // Add token to orderData below...
-      }
 
-      // 2. Prepare Data
-      const orderData = {
-        customer: this.form,
-        items: this.cartItems,
-        deliveryMethod: this.deliveryMethod,
-        shippingFee: this.shippingCost,
-        total: this.grandTotal,
-        paymentMethod: this.paymentMethod,
-        date: new Date().toISOString()
-      };
+        // 3. Save Order to Database (Shared logic for COD/Stripe)
+        const orderData = {
+          customer: this.form,
+          items: this.cartItems,
+          deliveryMethod: this.deliveryMethod,
+          total: this.grandTotal,
+          paymentMethod: this.paymentMethod,
+          status: this.paymentMethod === 'stripe' ? 'Paid' : 'Pending'
+        };
 
-      console.log('Sending Order:', orderData);
-      
-      // Simulate API delay
-      setTimeout(() => {
-        alert(`Order Placed Successfully! (${this.paymentMethod.toUpperCase()})`);
+        // Call your actual order creation endpoint here
+        // await api.post('/orders', orderData);
+
+        alert('Order Placed Successfully!');
         cartService.clearCart();
         this.$router.push('/');
+      } catch (err) {
+        console.error(err);
+        alert('Order failed. Please try again.');
+      } finally {
         this.loading = false;
-      }, 1000);
+      }
     }
   }
 }

@@ -22,11 +22,11 @@ export class ProxyService {
   ) {
     this.ORDER_WORKER_URL =
       this.configService.get('ORDER_WORKER_URL') ||
-      'http://e-mart-order-worker-1:3000';
+      'http://order-worker:3000';
 
     this.AUTH_SERVICE_URL =
       this.configService.get('AUTH_SERVICE_URL') ||
-      'http://e-mart-auth-service-1:3000';
+      'http://auth-service:3000';
   }
 
   async forwardRequest(

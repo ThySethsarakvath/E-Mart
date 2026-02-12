@@ -1,0 +1,29 @@
+[33mcommit bafb7eacba14bcf5779c074fb2d2cdbd928ddeb4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mhsitha2[m[33m)[m
+Author: Huoth Sitha <Huothsitha@gmail.com>
+Date:   Thu Feb 12 21:22:03 2026 +0700
+
+    restore checkout page
+
+[33mcommit cc6f386bcbd95c2b7d165ff5cb90f3c08014c98b[m
+Author: Huoth Sitha <Huothsitha@gmail.com>
+Date:   Thu Feb 12 20:01:21 2026 +0700
+
+    Stripe
+
+[33mcommit e5d23c78621848a0d4bdcc9147cbd6d48bb283d2[m[33m ([m[1;31morigin/hsitha2[m[33m)[m
+Author: Huoth Sitha <Huothsitha@gmail.com>
+Date:   Thu Feb 12 16:15:20 2026 +0700
+
+     add checkout page
+
+[33mcommit eaa83bee55f8d000d5471a0a38d8bbf8fca2aaca[m
+Author: Huoth Sitha <Huothsitha@gmail.com>
+Date:   Thu Feb 12 16:06:37 2026 +0700
+
+    chore: ignore env files
+
+[33mcommit 4b6a7ed4ebaf3de039dfba93e6c332cf6ea572a0[m
+Author: Huoth Sitha <Huothsitha@gmail.com>
+Date:   Thu Feb 12 16:01:18 2026 +0700
+
+    Ignore .env file
