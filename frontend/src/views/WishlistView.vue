@@ -16,7 +16,7 @@ const moveToCart = (product) => {
 
 const getImgUrl = (path) => {
   if (!path) return 'https://via.placeholder.com/150';
-  return `http://localhost:4000/uploads/products/${path}`;
+  return `https://e-mart-order-worker.onrender.com/uploads/products/${path}`;
 };
 </script>
 
@@ -105,10 +105,10 @@ const getImgUrl = (path) => {
 
 .actions-row { margin-top: 30px; }
 
-.btn-return-shop { 
+.btn-return-shop {
   display: inline-block;
-  background-color: white; 
-  border: 1px solid #ddd;  
+  background-color: white;
+  border: 1px solid #ddd;
   padding: 14px 35px;
   border-radius: 4px;
   color: #333;
@@ -119,8 +119,8 @@ const getImgUrl = (path) => {
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.btn-return-shop:hover { 
-  background-color: #f0f0f0; 
+.btn-return-shop:hover {
+  background-color: #f0f0f0;
   border-color: #ccc;
   transform: translateY(-2px);
 }

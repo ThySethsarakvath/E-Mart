@@ -1,7 +1,7 @@
 import apiClient from './api';
 import axios from 'axios';
 
-const DIRECT_ORDER_WORKER_URL = 'http://localhost:4000';
+const DIRECT_ORDER_WORKER_URL = 'https://e-mart-order-worker.onrender.com';
 
 export default {
   // Categories

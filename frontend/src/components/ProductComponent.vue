@@ -15,7 +15,7 @@ const showWishlistModal = ref(false)
 
 const imageUrl = computed(() => {
   if (!props.product.imagePath) return 'https://via.placeholder.com/200?text=No+Image'
-  return `http://localhost:4000/uploads/products/${props.product.imagePath}`
+  return `https://e-mart-order-worker.onrender.com/uploads/products/${props.product.imagePath}`
 })
 
 const formattedPrice = computed(() => {
@@ -41,7 +41,7 @@ const isInWishlist = computed(() => {
 
 
 const goToDetails = () => {
-  
+
   localStorage.setItem('currentProduct', JSON.stringify(props.product));
   router.push(`/product/${props.product.id}`);
 };

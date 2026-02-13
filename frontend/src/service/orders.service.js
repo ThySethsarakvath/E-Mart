@@ -1,7 +1,7 @@
 import axios from 'axios'
 import apiClient from './api'
 
-const API_URL = 'http://localhost:4001/api/orders'
+const API_URL = 'https://e-mart-iuun.onrender.com/orders'
 
 const getAuthHeader = () => {
   const user = JSON.parse(localStorage.getItem('user'))

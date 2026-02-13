@@ -21,24 +21,24 @@ export default {
       'Meat': 'Fresh chicken, beef, pork, and seafood.'
     };
 
- 
+
     const category = computed(() => {
       return productStore.categories.find(c => c.id == categoryId);
     });
 
-    
+
     const descriptionText = computed(() => {
       if (category.value && categoryDescriptions[category.value.name]) {
         return categoryDescriptions[category.value.name];
       }
-     
+
       return 'Browse our collection of products.';
     });
 
-    
+
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/products/category/${categoryId}`);
+        const response = await axios.get(`https://e-mart-order-worker.onrender.com/products/category/${categoryId}`);
         products.value = response.data;
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -64,7 +64,7 @@ export default {
     <div class="products-grid">
       <div v-for="product in products" :key="product.id" class="product-card">
         <div class="image-wrapper">
-          <img :src="`http://localhost:4000/uploads/products/${product.imagePath}`" :alt="product.name">
+          <img :src="`https://e-mart-order-worker.onrender.com/uploads/products/${product.imagePath}`" :alt="product.name">
         </div>
         <div class="product-info">
           <h3>{{ product.name }}</h3>
@@ -73,7 +73,7 @@ export default {
         </div>
       </div>
     </div>
-    
+
     <div v-if="products.length === 0" class="no-products">
         <p>No products found in this category yet.</p>
         <router-link to="/">Go Back Home</router-link>

@@ -54,7 +54,7 @@ export default {
       return positions[this.index] || {};
     },
     imageUrl() {
-      return `http://localhost:4000/uploads/arrivals/${this.arrival.imagePath}`;
+      return `https://e-mart-order-worker.onrender.com/uploads/arrivals/${this.arrival.imagePath}`;
     }
   }
 };

@@ -16,7 +16,7 @@ const loadProductData = () => {
   const savedProduct = localStorage.getItem('currentProduct');
   if (savedProduct) {
     product.value = JSON.parse(savedProduct);
-    fetchRelatedProducts(); 
+    fetchRelatedProducts();
     window.scrollTo(0, 0);
   }
 };
@@ -26,9 +26,9 @@ const fetchRelatedProducts = async () => {
     const subCatId = product.value?.subCategory?.id;
     if (!subCatId) return;
 
-   
+
     const response = await axios.get(`http://localhost:4000/products?subCategoryId=${subCatId}`);
-    
+
     if (response.data && Array.isArray(response.data)) {
       relatedProducts.value = response.data
         .filter(p => p.id !== product.value.id)
@@ -45,7 +45,7 @@ const goToRelated = (item) => {
 };
 
 const getImgUrl = (path) => {
-  return path ? `http://localhost:4000/uploads/products/${path}` : 'https://via.placeholder.com/300';
+  return path ? `https://e-mart-order-worker.onrender.com/uploads/products/${path}` : 'https://via.placeholder.com/300';
 };
 
 const increaseQty = () => quantity.value++;
@@ -58,7 +58,7 @@ watch(() => route.params.id, loadProductData);
 <template>
   <div class="product-detail-page" v-if="product">
     <div class="container">
-      
+
       <div class="top-nav-bar">
         <router-link to="/" class="back-link">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -86,7 +86,7 @@ watch(() => route.params.id, loadProductData);
           </nav>
 
           <h1 class="product-title">{{ product.name }}</h1>
-          
+
           <div class="price-box">
             <span class="amount blue-text">${{ parseFloat(product.price).toFixed(2) }}</span>
           </div>
@@ -99,11 +99,11 @@ watch(() => route.params.id, loadProductData);
               <span class="qty-value">{{ quantity }}</span>
               <button @click="increaseQty" class="qty-btn qty-plus">+</button>
             </div>
-            
+
             <button class="btn-add-cart" @click="cartService.addToCart({...product, quantity: quantity})">
               Add To Cart
             </button>
-            
+
             <button class="btn-wish" @click="wishlistService.toggleWishlist(product)">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" :fill="wishlistService.isInWishlist(product.id) ? '#dc3545' : 'none'" :stroke="wishlistService.isInWishlist(product.id) ? '#dc3545' : '#7e7e7e'" stroke-width="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -141,9 +141,9 @@ watch(() => route.params.id, loadProductData);
 
 .product-main-row { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
 
-.image-frame { 
+.image-frame {
   aspect-ratio: 1 / 1; width: 100%;
-  background: #fff; border-radius: 12px; border: 2px solid #0d6efd; 
+  background: #fff; border-radius: 12px; border: 2px solid #0d6efd;
   display: flex; justify-content: center; align-items: center; overflow: hidden; padding: 20px;
 }
 .image-frame img { width: 100%; height: 100%; object-fit: contain; }
@@ -161,19 +161,19 @@ watch(() => route.params.id, loadProductData);
 .description { font-size: 16px; color: #7f8c8d; line-height: 1.8; margin-bottom: 35px; }
 
 
-.action-bar { 
-  display: flex; 
-  align-items: center; 
-  gap: 25px; 
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 25px;
   margin-top: 20px;
 }
 
-.qty-control { 
-  display: flex; 
-  align-items: center; 
-  border: 1px solid #ddd; 
-  border-radius: 4px; 
-  overflow: hidden; 
+.qty-control {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
   background: white;
   height: 44px;
 }
@@ -185,29 +185,29 @@ watch(() => route.params.id, loadProductData);
 .qty-plus:hover { background: #2ecc71; color: white; }
 .qty-value { padding: 0 15px; font-weight: 700; min-width: 40px; text-align: center; }
 
-.btn-add-cart { 
-  background: #0d6efd; 
-  color: white; 
-  border: none; 
-  padding: 0 40px; 
-  border-radius: 4px; 
-  font-weight: 600; 
-  cursor: pointer; 
-  transition: 0.3s; 
-  height: 44px; 
+.btn-add-cart {
+  background: #0d6efd;
+  color: white;
+  border: none;
+  padding: 0 40px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  height: 44px;
 }
 .btn-add-cart:hover { background: #0b5ed7; transform: translateY(-2px); }
 
-.btn-wish { 
-  width: 44px; 
+.btn-wish {
+  width: 44px;
   height: 44px;
-  border: 1px solid #dddddd01; 
-  background: rgba(255, 255, 255, 0); 
-  border-radius: 4px; 
-  cursor: pointer; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+  border: 1px solid #dddddd01;
+  background: rgba(255, 255, 255, 0);
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 
@@ -215,8 +215,8 @@ watch(() => route.params.id, loadProductData);
 .section-title { font-size: 24px; font-weight: 700; margin-bottom: 30px; color: #333; }
 .related-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .related-card { cursor: pointer; transition: 0.3s; }
-.related-image-frame { 
-  aspect-ratio: 1 / 1; background: #fff; border: 1px solid #0d6efd; 
+.related-image-frame {
+  aspect-ratio: 1 / 1; background: #fff; border: 1px solid #0d6efd;
   border-radius: 8px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: center; align-items: center;
 }
 .related-image-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }

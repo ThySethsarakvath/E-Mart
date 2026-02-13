@@ -15,13 +15,13 @@ export default {
     const route = useRoute(); // 1. Get current route info
 
     const navigateToCategory = () => {
-      router.push({ 
-        path: '/products', 
-        hash: `#category-${props.category.id}` 
+      router.push({
+        path: '/products',
+        hash: `#category-${props.category.id}`
       });
     };
 
-    
+
     const isActive = computed(() => {
       return route.hash === `#category-${props.category.id}`;
     });
@@ -30,16 +30,16 @@ export default {
   },
   computed: {
     imageUrl() {
-      return `http://localhost:4000/uploads/categories/${this.category.imagePath}`;
+      return `https://e-mart-order-worker.onrender.comuploads/categories/${this.category.imagePath}`;
     }
   }
 }
 </script>
 
 <template>
-  <div 
-    class="category-card" 
-    :class="{ 'active-card': isActive }" 
+  <div
+    class="category-card"
+    :class="{ 'active-card': isActive }"
     @click="navigateToCategory"
   >
     <div class="icon-container">
@@ -72,15 +72,15 @@ export default {
 
 
 .active-card {
-  border-color: #0d6efd !important;     
-  background-color: #f0f7ff;            
-  transform: translateY(-4px);         
+  border-color: #0d6efd !important;
+  background-color: #f0f7ff;
+  transform: translateY(-4px);
   box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25); /* Stronger Glow */
 }
 
 
 .active-card .category-name {
-  color: #0d6efd; 
+  color: #0d6efd;
   font-weight: 700;
 }
 
@@ -97,7 +97,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: contain;
- 
+
   filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(195deg) brightness(98%) contrast(105%);
 }
 

@@ -45,6 +45,6 @@ export default {
 
   getProductImageUrl(imagePath) {
     // Points to the microservice storage port via gateway or direct
-    return `http://localhost:4000/uploads/products/${imagePath}`;
+    return `https://e-mart-order-worker.onrender.com/uploads/products/${imagePath}`;
   }
 };

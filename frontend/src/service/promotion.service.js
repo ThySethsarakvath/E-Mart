@@ -62,6 +62,6 @@ export default {
   // IMAGE URL HELPER
   // ======================
   getPromotionImageUrl(imagePath) {
-    return `http://localhost:4000/uploads/promotions/${imagePath}`;
+    return `https://e-mart-order-worker.onrender.com/uploads/promotions/${imagePath}`;
   },
 };

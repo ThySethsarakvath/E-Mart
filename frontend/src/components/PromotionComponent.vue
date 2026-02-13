@@ -9,7 +9,7 @@ export default {
   },
   computed: {
     imageUrl() {
-      return `http://localhost:4000/uploads/promotions/${this.promotion.imagePath}`;
+      return `https://e-mart-order-worker.onrender.com/uploads/promotions/${this.promotion.imagePath}`;
     },
     discountLabel() {
       return `-${this.promotion.discountPercent}%`;

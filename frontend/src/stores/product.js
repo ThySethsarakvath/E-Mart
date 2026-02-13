@@ -13,10 +13,10 @@ export const useProductStore = defineStore('product', {
       try {
         const [bannersResponse, promotionResponse, categoryResponse, arrivalsResponse] =
         await Promise.all([
-          axios.get('http://localhost:4000/banners'),
-          axios.get('http://localhost:4000/promotions'),
-          axios.get('http://localhost:4000/categories'),
-          axios.get('http://localhost:4000/arrivals'),
+          axios.get('https://e-mart-order-worker.onrender.com/banners'),
+          axios.get('https://e-mart-order-worker.onrender.com/promotions'),
+          axios.get('https://e-mart-order-worker.onrender.com/categories'),
+          axios.get('https://e-mart-order-worker.onrender.com/arrivals'),
         ])
         this.banners = bannersResponse.data;
         this.promotions = promotionResponse.data;
