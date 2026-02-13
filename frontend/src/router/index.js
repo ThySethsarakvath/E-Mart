@@ -21,6 +21,7 @@ import ProductDetailView from '../views/ProductDetailView.vue';
 import PaymentView from '../views/PaymentView.vue';
 import AdminOrderManagement from '@/components/admin/AdminOrderManagement.vue';
 import AdminUserManagement from '@/components/admin/AdminUserManagement.vue'
+import MyOrders from '@/components/MyOrders.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -87,7 +88,12 @@ const router = createRouter({
       component: PaymentView,
       meta: { requiresAuth: true}
     },
-
+    {
+      path: '/my-orders',
+      name: 'MyOrders',
+      component: () => MyOrders,
+      meta: { requiresAuth: true }
+    },
     {
       path: '/admin',
       component: AdminLayout,

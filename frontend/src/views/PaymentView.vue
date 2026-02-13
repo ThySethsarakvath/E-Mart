@@ -88,7 +88,7 @@
         <button @click="$router.push('/')" class="btn-secondary">
           Continue Shopping
         </button>
-        <button @click="$router.push('/orders')" class="btn-outline">
+        <button @click="$router.push('/my-orders')" class="btn-outline">
           View My Orders
         </button>
       </div>

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Body,
   Controller,
@@ -20,31 +22,25 @@ import { UpdateCategoriesDto } from './dto/update-categories.dto';
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-
   @Get('subcategories')
   findAllSubs() {
     return this.categoriesService.findAllSubCategories();
   }
-
 
   @Get('subcategories/:id')
   findOneSub(@Param('id') id: string) {
     return this.categoriesService.findOneSubCategory(+id);
   }
 
-
   @Post('subcategories')
   createSub(@Body() body: { name: string; categoryId: number }) {
     return this.categoriesService.createSubCategory(body.name, body.categoryId);
   }
 
-
   @Delete('subcategories/:id')
   removeSub(@Param('id') id: string) {
     return this.categoriesService.removeSubCategory(+id);
   }
-
- 
 
   @Get()
   findAll() {
@@ -69,8 +65,11 @@ export class CategoriesController {
     }),
   )
   create(@Body() dto: CreateCategoriesDto, @UploadedFile() file: any) {
-    const fileName = file ? file.filename : '';
-    return this.categoriesService.create(dto, fileName);
+    // If file exists, attach the filename to the DTO
+    if (file) {
+      dto.imagePath = file.filename;
+    }
+    return this.categoriesService.create(dto, file?.filename || '');
   }
 
   @Patch(':id')

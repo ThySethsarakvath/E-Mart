@@ -26,9 +26,9 @@ export default {
   async createCategory(formData) {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await axios.post(`${DIRECT_ORDER_WORKER_URL}/categories`, formData, {
+      const response = await apiClient.post(`/categories`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          // 'Content-Type': 'multipart/form-data',
           'Authorization': token ? `Bearer ${token}` : '',
         },
       });
@@ -41,7 +41,7 @@ export default {
   async updateCategory(id, formData) {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await axios.patch(`${DIRECT_ORDER_WORKER_URL}/categories/${id}`, formData, {
+      const response = await apiClient.patch(`/categories/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': token ? `Bearer ${token}` : '',

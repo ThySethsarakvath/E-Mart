@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Controller,
   Get,
@@ -7,13 +9,25 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
+
+  // order.controller.ts (in your order-worker service)
+  @Get('my-orders')
+  @UseGuards(JwtAuthGuard) // This guard should extract req.user.id from the token
+  async getMyOrders(@Req() req) {
+    console.log('User from Token:', req.user);
+    const userId = req.user.id; // Or req.user.sub depending on your strategy
+    return this.ordersService.findByUserId(userId);
+  }
 
   /**
    * Create a new order

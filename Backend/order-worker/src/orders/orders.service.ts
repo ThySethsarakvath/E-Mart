@@ -145,7 +145,7 @@ export class OrdersService {
    */
   async findByUserId(userId: number, page = 1, limit = 10) {
     const [orders, total] = await this.orderRepository.findAndCount({
-      where: { userId },
+      where: { userId: userId as any },
       relations: ['items', 'payment'],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
