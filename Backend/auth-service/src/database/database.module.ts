@@ -14,11 +14,10 @@ import { RefreshToken } from '../entities/refresh-token.entity';
       imports: [ConfigModule],
       useFactory: (cfg: ConfigService) => ({
         type: 'postgres',
-        host: cfg.get('AUTH_DB_HOST'),
-        port: cfg.get('AUTH_DB_PORT'),
-        username: cfg.get('AUTH_DB_USER'),
-        password: cfg.get('AUTH_DB_PASS'),
-        database: cfg.get('AUTH_DB_NAME'),
+        url: cfg.get<string>('DATABASE_URL'),
+        ssl: {
+          rejectUnauthorized: false,
+        },
         entities: [
           User,
           Role,

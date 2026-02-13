@@ -11,7 +11,7 @@ import { GatewayController } from './gateway/gateway.controller';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `.env`,
+      envFilePath: `../.env`,
     }),
     HttpModule,
     AuthModule,
