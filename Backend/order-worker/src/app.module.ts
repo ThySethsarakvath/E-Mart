@@ -12,14 +12,14 @@ import { PromotionsModule } from './promotions/promotions.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ArrivalsModule } from './arrivals/arrivals.module';
 import { ProductsModule } from './products/products.module';
-
+import { PaymentsModule } from './payment/payments.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '../.env',
     }),
-
+    PaymentsModule,
     BannersModule,
     PromotionsModule,
     CategoriesModule,

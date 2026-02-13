@@ -16,6 +16,7 @@ export class ProxyService {
   private readonly ORDER_WORKER_URL: string;
   private readonly AUTH_SERVICE_URL: string;
 
+  
   constructor(
     private httpService: HttpService,
     private configService: ConfigService,
@@ -30,7 +31,7 @@ export class ProxyService {
   }
 
   async forwardRequest(
-    service: 'order-worker' | 'auth-service',
+    service: 'order-worker' | 'auth-service' | 'payments',
     path: string,
     method: string,
     headers: any,
@@ -39,6 +40,7 @@ export class ProxyService {
     rawRequest?: Request,
   ) {
     const baseUrl =
+    (service === 'order-worker' || service === 'payments')
       service === 'order-worker'
         ? this.ORDER_WORKER_URL
         : this.AUTH_SERVICE_URL;
