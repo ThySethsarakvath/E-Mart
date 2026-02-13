@@ -24,7 +24,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: true,
+    origin: ['https://e-mart-frontend-38lv.onrender.com'],
     credentials: true,
   });
 
