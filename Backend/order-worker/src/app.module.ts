@@ -32,16 +32,18 @@ import { OrdersModule } from './orders/orders.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get<string>('DB_HOST'),
-        port: config.get<number>('DB_PORT'),
-        username: config.get<string>('DB_USER'),
-        password: config.get<string>('DB_PASS'),
-        database: config.get<string>('DB_NAME'),
-        autoLoadEntities: true,
-        synchronize: true,
-      }),
+      useFactory: (config: ConfigService) => {
+        const dbUrl = config.get<string>('DATABASE_EMART_URL');
+        console.log('DATABASE_EMART_URL:', dbUrl); // <-- debug log
+
+        return {
+          type: 'postgres',
+          url: dbUrl,
+          ssl: { rejectUnauthorized: false },
+          autoLoadEntities: true,
+          synchronize: true,
+        };
+      },
     }),
   ],
   controllers: [AppController],

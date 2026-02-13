@@ -14,7 +14,7 @@ import { RefreshToken } from '../entities/refresh-token.entity';
       imports: [ConfigModule],
       useFactory: (cfg: ConfigService) => ({
         type: 'postgres',
-        url: cfg.get<string>('DATABASE_URL'),
+        url: cfg.get<string>('DATABASE_AUTH_URL'),
         ssl: {
           rejectUnauthorized: false,
         },
