@@ -13,12 +13,15 @@ import AdminNewArrival from '@/components/admin/AdminNewArrival.vue'
 import AdminCategory from '@/components/admin/AdminCategory.vue'
 import AdminProduct from '@/components/admin/AdminProduct.vue'
 import AdminPromotion from '@/components/admin/AdminPromotion.vue'
-
+import CheckoutView from '@/views/CheckoutView.vue';
 import CartView from '../views/CartView.vue';
 import ContactView from '../views/ContactView.vue';
-import WishlistView from '../views/WishlistView.vue'
-import ProductDetailView from '../views/ProductDetailView.vue'
-import CheckoutView from '@/views/CheckoutView.vue'
+import WishlistView from '../views/WishlistView.vue';
+import ProductDetailView from '../views/ProductDetailView.vue';
+import PaymentView from '../views/PaymentView.vue';
+import AdminOrderManagement from '@/components/admin/AdminOrderManagement.vue';
+import AdminUserManagement from '@/components/admin/AdminUserManagement.vue'
+import MyOrders from '@/components/MyOrders.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -85,7 +88,18 @@ const router = createRouter({
       component: LoginView,
       meta: { guestOnly: true }
     },
-
+    {
+      path: '/payments',
+      name: 'payments',
+      component: PaymentView,
+      meta: { requiresAuth: true}
+    },
+    {
+      path: '/my-orders',
+      name: 'MyOrders',
+      component: () => MyOrders,
+      meta: { requiresAuth: true }
+    },
     {
       path: '/admin',
       component: AdminLayout,
@@ -124,7 +138,17 @@ const router = createRouter({
           path: 'promotions',
           name: 'admin-promotions',
           component: () => AdminPromotion,
-        }
+        },
+        {
+          path: 'orders',
+          name: 'orders-management',
+          component: () => AdminOrderManagement,
+        },
+        {
+          path: 'users',
+          name: 'users-management',
+          component: () => AdminUserManagement,
+        },
       ]
     }
   ],

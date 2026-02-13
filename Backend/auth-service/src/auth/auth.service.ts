@@ -190,6 +190,22 @@ export class AuthService {
     return { message: 'Logged out successfully' };
   }
 
+  async findAllUsers() {
+    return await this.userRepository.find({
+      relations: ['userRoles', 'userRoles.role'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async toggleUserStatus(userId: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    user.isActive = !user.isActive;
+    return await this.userRepository.save(user);
+  }
+
   async getProfile(userId: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -267,5 +283,10 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+  async remove(id: string) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    return this.userRepository.remove(user);
   }
 }

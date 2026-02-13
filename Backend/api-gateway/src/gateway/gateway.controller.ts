@@ -24,16 +24,25 @@ export class GatewayController {
 
       let service: 'auth-service' | 'order-worker';
 
-      if (path.startsWith('/auth')) {
+      // ===============================
+      // AUTH ROUTES
+      // ===============================
+      if (path.startsWith('/auth') || path.startsWith('/users')) {
         service = 'auth-service';
-      } else if (
+      }
+
+      // ===============================
+      // ORDER WORKER ROUTES
+      // ===============================
+      else if (
         path.startsWith('/products') ||
         path.startsWith('/banners') ||
         path.startsWith('/arrivals') ||
         path.startsWith('/promotions') ||
         path.startsWith('/orders') ||
         path.startsWith('/categories') ||
-        path.startsWith('/payments')
+        path.startsWith('/payments') ||
+        path.startsWith('/orders')
       ) {
         service = 'order-worker';
       } else {
@@ -44,7 +53,7 @@ export class GatewayController {
         'multipart/form-data',
       );
 
-      // ✅ Parse JSON ONLY when not multipart
+      // ✅ Parse body only when NOT multipart
       if (!isMultipart && ['POST', 'PUT', 'PATCH'].includes(req.method)) {
         await new Promise((resolve, reject) => {
           jsonParser(req, res, (err) => (err ? reject(err) : resolve(null)));

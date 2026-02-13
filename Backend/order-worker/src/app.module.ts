@@ -12,7 +12,9 @@ import { PromotionsModule } from './promotions/promotions.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ArrivalsModule } from './arrivals/arrivals.module';
 import { ProductsModule } from './products/products.module';
-import { PaymentsModule } from './payment/payments.module';
+import { PaymentsModule } from './payments/payments.module';
+import { OrdersModule } from './orders/orders.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -25,6 +27,8 @@ import { PaymentsModule } from './payment/payments.module';
     CategoriesModule,
     ArrivalsModule,
     ProductsModule,
+    PaymentsModule,
+    OrdersModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

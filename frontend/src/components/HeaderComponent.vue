@@ -15,8 +15,8 @@
         </div>
 
         <div class="top-menu-bar">
-          
-        
+
+
 
           <RouterLink to="/wishlist" class="menu-item cart-link">
             <div class="icon-wrapper">
@@ -53,10 +53,16 @@
                 <span class="user-email">{{ user?.email }}</span>
               </div>
               <hr />
-              <RouterLink to="" class="dropdown-item" @click="closeDropdown">
-                Profile
+
+              <RouterLink v-if="isAdmin" to="/admin/dashboard" class="dropdown-item admin-link" @click="closeDropdown">
+                Dashboard (Admin)
               </RouterLink>
-              <RouterLink to="" class="dropdown-item" @click="closeDropdown">
+
+              <div class="dropdown-item" @click="openProfile">
+                Profile
+              </div>
+
+              <RouterLink to="/my-orders" class="dropdown-item" @click="closeDropdown">
                 My Orders
               </RouterLink>
               <hr />
@@ -64,6 +70,7 @@
                 Logout
               </div>
             </div>
+            <UserProfileModal v-if="showProfileModal" :user="user" @close="showProfileModal = false" />
           </div>
         </div>
       </div>
@@ -73,19 +80,25 @@
 
 <script>
 import authService from '@/auth/auth.service';
-import cartService from '@/service/cart'; 
+import cartService from '@/service/cart';
 import wishlistService from '@/service/wishlist';
+import UserProfileModal from './UserProfileModal.vue';
 
 export default {
   name: 'HeaderComponent',
+  components: { UserProfileModal },
   data() {
     return {
       isLoggedIn: false,
       user: null,
-      showDropdown: false
+      showDropdown: false,
+      showProfileModal: false
     }
   },
   computed: {
+    isAdmin() {
+      return this.user?.roles?.includes('admin');
+    },
     cartCount() {
       return cartService.totalItems.value;
     },
@@ -111,10 +124,14 @@ export default {
     closeDropdown() {
       this.showDropdown = false;
     },
+    openProfile() {
+      this.showProfileModal = true;
+      this.closeDropdown();
+    },
     async handleLogout() {
       try {
         await authService.logout();
-        
+
         cartService.reloadCart();
 
         this.isLoggedIn = false;
@@ -164,22 +181,60 @@ export default {
   gap: 30px;
 }
 
-.logo { display: flex; align-items: center; }
-.logo-img { width: 80px; height: 80px; object-fit: contain; }
-
-.nav-links { display: flex; align-items: center; gap: 25px; font-size: 16px; font-weight: 500; }
-.nav-links a { color: #253d4e; transition: color 0.3s ease; text-decoration: none; }
-
-.top-menu-bar { display: flex; align-items: center; gap: 25px; }
-
-.menu-item, .button {
-  display: flex; align-items: center; gap: 6px; cursor: pointer;
-  transition: color 0.3s ease; color: #253d4e; font-size: 14px; font-weight: 500;
-  position: relative; text-decoration: none;
+.logo {
+  display: flex;
+  align-items: center;
 }
 
-.cart-link { position: relative; }
-.icon-wrapper { position: relative; display: flex; align-items: center; }
+.logo-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.nav-links a {
+  color: #253d4e;
+  transition: color 0.3s ease;
+  text-decoration: none;
+}
+
+.top-menu-bar {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.menu-item,
+.button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  color: #253d4e;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+  text-decoration: none;
+}
+
+.cart-link {
+  position: relative;
+}
+
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 
 .cart-badge {
   position: absolute;
@@ -199,48 +254,150 @@ export default {
 }
 
 .button-item .button {
-  background-color: #0990ff; border: none; padding: 8px 12px; border-radius: 4px;
-  color: #fff; box-shadow: 0 4px #066bbd; transition: all 0.2s ease;
+  background-color: #0990ff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: #fff;
+  box-shadow: 0 4px #066bbd;
+  transition: all 0.2s ease;
 }
 
-.menu-item:hover { color: #0990ff; }
-.button-item .button:active { box-shadow: 0 2px #066bbd; transform: translateY(2px); }
-.menu-item img { width: 18px; height: 18px; }
+.menu-item:hover {
+  color: #0990ff;
+}
 
-.user-menu { position: relative; }
+.button-item .button:active {
+  box-shadow: 0 2px #066bbd;
+  transform: translateY(2px);
+}
+
+.menu-item img {
+  width: 18px;
+  height: 18px;
+}
+
+.user-menu {
+  position: relative;
+}
+
 .user-info {
-  display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 12px;
-  background-color: #0990ff; border-radius: 4px; color: #fff; font-size: 14px; font-weight: 500;
-  box-shadow: 0 4px #066bbd; transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 8px 12px;
+  background-color: #0990ff;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px #066bbd;
+  transition: all 0.2s ease;
 }
-.user-info:active { box-shadow: 0 2px #066bbd; transform: translateY(2px); }
-.user-info img { width: 18px; height: 18px; }
-.dropdown-arrow { font-size: 10px; margin-left: 4px; }
+
+.user-info:active {
+  box-shadow: 0 2px #066bbd;
+  transform: translateY(2px);
+}
+
+.user-info img {
+  width: 18px;
+  height: 18px;
+}
+
+.dropdown-arrow {
+  font-size: 10px;
+  margin-left: 4px;
+}
 
 .dropdown {
-  position: absolute; top: calc(100% + 8px); right: 0; background: #fff;
-  border: 1px solid #ececec; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  min-width: 200px; overflow: hidden; z-index: 1001;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  overflow: hidden;
+  z-index: 1001;
 }
-.dropdown-item {
-  padding: 12px 16px; color: #253d4e; text-decoration: none; display: block;
-  transition: background 0.2s ease; cursor: pointer; font-size: 14px;
-}
-.dropdown-item:hover { background-color: #f5f5f5; }
-.user-email { color: #666; font-size: 12px; font-weight: normal; }
-.dropdown hr { margin: 0; border: none; border-top: 1px solid #ececec; }
-.dropdown-item.logout { color: #dc3545; font-weight: 500; }
-.dropdown-item.logout:hover { background-color: #fff5f5; }
 
-@media (max-width: 968px) { .header-container { flex-wrap: wrap; gap: 15px; } }
+.dropdown-item {
+  padding: 12px 16px;
+  color: #253d4e;
+  text-decoration: none;
+  display: block;
+  transition: background 0.2s ease;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.user-email {
+  color: #666;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.dropdown hr {
+  margin: 0;
+  border: none;
+  border-top: 1px solid #ececec;
+}
+
+.dropdown-item.logout {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.dropdown-item.logout:hover {
+  background-color: #fff5f5;
+}
+
+@media (max-width: 968px) {
+  .header-container {
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+}
+
 @media (max-width: 768px) {
-  .top-header { padding: 15px 0; }
-  .header-container { padding: 0 10px; }
-  .logo-img { width: 32px; height: 32px; }
-  .top-menu-bar { gap: 15px; }
-  .menu-item span { display: none; }
-  .menu-item { gap: 0; }
-  .user-info span:first-of-type { display: none; }
-  .dropdown { right: -10px; }
+  .top-header {
+    padding: 15px 0;
+  }
+
+  .header-container {
+    padding: 0 10px;
+  }
+
+  .logo-img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .top-menu-bar {
+    gap: 15px;
+  }
+
+  .menu-item span {
+    display: none;
+  }
+
+  .menu-item {
+    gap: 0;
+  }
+
+  .user-info span:first-of-type {
+    display: none;
+  }
+
+  .dropdown {
+    right: -10px;
+  }
 }
 </style>

@@ -19,7 +19,7 @@ export class AuthIntrospectionService {
     try {
       const authServiceUrl =
         this.configService.get('AUTH_SERVICE_URL') ||
-        'http://e-mart-auth-service-1:3000';
+        'http://auth-service:3000';
 
       const response = await firstValueFrom(
         this.httpService.get(`${authServiceUrl}/auth/me`, {
