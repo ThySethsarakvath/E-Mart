@@ -30,7 +30,7 @@ export default {
   },
   computed: {
     imageUrl() {
-      return `https://e-mart-order-worker.onrender.comuploads/categories/${this.category.imagePath}`;
+      return `https://e-mart-order-worker.onrender.com/uploads/categories/${this.category.imagePath}`;
     }
   }
 }
