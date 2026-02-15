@@ -25,7 +25,7 @@ export default {
   },
   computed: {
     allBannerImages() {
-      return this.productStore.banners.map(banner => `https://e-mart-order-worker.onrender.com/uploads/banners/${banner.imagePath}`);
+      return this.productStore.banners.filter(banner => banner.imagePath).map(banner => banner.imagePath);
     }
   }
 }
