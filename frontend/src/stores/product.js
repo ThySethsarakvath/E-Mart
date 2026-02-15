@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
-
+const workerClient = axios.create({
+  baseURL: import.meta.env.WORKER_API_URL,
+});
 export const useProductStore = defineStore('product', {
   state: () => ({
     banners: [],
@@ -13,10 +15,10 @@ export const useProductStore = defineStore('product', {
       try {
         const [bannersResponse, promotionResponse, categoryResponse, arrivalsResponse] =
         await Promise.all([
-          axios.get('https://e-mart-order-worker.onrender.com/banners'),
-          axios.get('https://e-mart-order-worker.onrender.com/promotions'),
-          axios.get('https://e-mart-order-worker.onrender.com/categories'),
-          axios.get('https://e-mart-order-worker.onrender.com/arrivals'),
+          workerClient.get('/banners'),
+          workerClient.get('/promotions'),
+          workerClient.get('/categories'),
+          workerClient.get('/arrivals'),
         ])
         this.banners = bannersResponse.data;
         this.promotions = promotionResponse.data;

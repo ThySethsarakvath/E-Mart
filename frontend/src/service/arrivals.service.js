@@ -1,8 +1,7 @@
 import apiClient from './api'
 import axios from 'axios'
 
-const DIRECT_ORDER_WORKER_URL = 'https://e-mart-order-worker.onrender.com'
-
+const DIRECT_ORDER_WORKER_URL = import.meta.env.ORDER_WORKER_URL;
 export default {
   async getAllArrivals() {
     try {

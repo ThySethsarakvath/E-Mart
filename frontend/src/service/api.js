@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://e-mart-iuun.onrender.com/api';
+const API_BASE_URL = import.meta.env.API_BASE_URL;
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
