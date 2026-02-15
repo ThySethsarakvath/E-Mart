@@ -13,15 +13,15 @@ import AdminNewArrival from '@/components/admin/AdminNewArrival.vue'
 import AdminCategory from '@/components/admin/AdminCategory.vue'
 import AdminProduct from '@/components/admin/AdminProduct.vue'
 import AdminPromotion from '@/components/admin/AdminPromotion.vue'
-
-import CartView from '../views/CartView.vue';
-import ContactView from '../views/ContactView.vue';
-import WishlistView from '../views/WishlistView.vue';
-import ProductDetailView from '../views/ProductDetailView.vue';
-import PaymentView from '../views/PaymentView.vue';
-import AdminOrderManagement from '@/components/admin/AdminOrderManagement.vue';
+import CartView from '../views/CartView.vue'
+import ContactView from '../views/ContactView.vue'
+import WishlistView from '../views/WishlistView.vue'
+import ProductDetailView from '../views/ProductDetailView.vue'
+import PaymentView from '../views/PaymentView.vue'
+import AdminOrderManagement from '@/components/admin/AdminOrderManagement.vue'
 import AdminUserManagement from '@/components/admin/AdminUserManagement.vue'
 import MyOrders from '@/components/MyOrders.vue'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -29,70 +29,70 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: { requiresAuth: false }
+      meta: { requiresAuth: false },
     },
     {
-    path: '/wishlist',
-    name: 'wishlist',
-    component: WishlistView
+      path: '/wishlist',
+      name: 'wishlist',
+      component: WishlistView,
     },
     {
-    path: '/product/:id',
-    name: 'product-detail',
-    component: ProductDetailView
+      path: '/product/:id',
+      name: 'product-detail',
+      component: ProductDetailView,
     },
     {
       path: '/about',
       name: 'about',
       component: AboutView,
-      meta: { requiresAuth: false }
+      meta: { requiresAuth: false },
     },
     {
-    path: '/cart',
-    name: 'cart',
-    component: CartView
+      path: '/cart',
+      name: 'cart',
+      component: CartView,
     },
     {
-    path: '/contact',
-    name: 'contact',
-    component: ContactView
-  },
+      path: '/contact',
+      name: 'contact',
+      component: ContactView,
+    },
     {
       path: '/category/:id',
       name: 'category-products',
       component: CategoryProductsView,
       props: true,
-      meta: { requiresAuth: false }
+      meta: { requiresAuth: false },
     },
     {
       path: '/products',
       name: 'products',
       component: ProductsView,
-      meta: { requiresAuth: false }
+      meta: { requiresAuth: false },
     },
     {
       path: '/register',
       name: 'register',
       component: RegisterView,
-      meta: { guestOnly: true }
+      meta: { guestOnly: true },
     },
     {
       path: '/login',
       name: 'login',
       component: LoginView,
-      meta: { guestOnly: true }
+      meta: { guestOnly: true },
     },
     {
       path: '/payments',
       name: 'payments',
       component: PaymentView,
-      meta: { requiresAuth: true}
+      meta: { requiresAuth: true },
     },
     {
       path: '/my-orders',
       name: 'MyOrders',
-      component: () => MyOrders,
-      meta: { requiresAuth: true }
+      component: MyOrders,
+      meta: { requiresAuth: true },
     },
     {
       path: '/admin',
@@ -101,7 +101,7 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: '/admin/dashboard'
+          redirect: '/admin/dashboard',
         },
         {
           path: 'dashboard',
@@ -111,50 +111,49 @@ const router = createRouter({
         {
           path: 'banners',
           name: 'admin-banners',
-          component: () => AdminBanner,
+          component: AdminBanner,
         },
         {
           path: 'arrivals',
           name: 'admin-arrivals',
-          component: () => AdminNewArrival,
+          component: AdminNewArrival,
         },
         {
           path: 'categories',
           name: 'admin-categories',
-          component: () => AdminCategory,
+          component: AdminCategory,
         },
         {
           path: 'products',
           name: 'admin-products',
-          component: () => AdminProduct,
+          component: AdminProduct,
         },
         {
           path: 'promotions',
           name: 'admin-promotions',
-          component: () => AdminPromotion,
+          component: AdminPromotion,
         },
         {
           path: 'orders',
           name: 'orders-management',
-          component: () => AdminOrderManagement,
+          component: AdminOrderManagement,
         },
         {
           path: 'users',
           name: 'users-management',
-          component: () => AdminUserManagement,
+          component: AdminUserManagement,
         },
-      ]
-    }
+      ],
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
     }
-
     return { top: 0, behavior: 'smooth' }
-  }
+  },
 })
 
-router.beforeEach(authGuard);
+router.beforeEach(authGuard)
 
 export default router
