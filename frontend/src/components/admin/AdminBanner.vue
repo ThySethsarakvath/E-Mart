@@ -21,12 +21,8 @@
     <div v-else class="banners-grid">
       <div v-for="banner in banners" :key="banner.id" class="banner-card">
         <div class="banner-image-container">
-          <img
-            :src="getBannerImageUrl(banner.imagePath)"
-            :alt="banner.title || 'Banner'"
-            @error="handleImageError"
-            class="banner-image"
-          />
+          <img :src="banner.imagePath || 'https://via.placeholder.com/1920x600?text=No+Image'"
+            :alt="banner.title || 'Banner'" @error="handleImageError" class="banner-image" />
         </div>
 
         <div class="banner-content">
@@ -75,35 +71,20 @@
                 <span>Click to upload banner image</span>
                 <span class="upload-hint">Recommended size: 1920x600px (Max 5MB)</span>
               </label>
-              <input
-                id="banner-input"
-                type="file"
-                accept="image/*"
-                @change="handleFileChange"
-                style="display: none"
-                ref="fileInput"
-              />
+              <input id="banner-input" type="file" accept="image/*" @change="handleFileChange" style="display: none"
+                ref="fileInput" />
             </div>
           </div>
 
           <div class="form-group">
             <label>Title (Optional)</label>
-            <input
-              type="text"
-              v-model="formData.title"
-              placeholder="Enter banner title"
-              class="form-input"
-            />
+            <input type="text" v-model="formData.title" placeholder="Enter banner title" class="form-input" />
           </div>
 
           <div class="form-group">
             <label>Subtitle / Description (Optional)</label>
-            <textarea
-              v-model="formData.subtitle"
-              placeholder="Enter banner subtitle"
-              rows="3"
-              class="form-input"
-            ></textarea>
+            <textarea v-model="formData.subtitle" placeholder="Enter banner subtitle" rows="3"
+              class="form-input"></textarea>
           </div>
 
           <div v-if="errorMessage" class="error-message">
@@ -182,10 +163,6 @@ export default {
       }
     },
 
-    getBannerImageUrl(imagePath) {
-      return bannerService.getBannerImageUrl(imagePath);
-    },
-
     handleImageError(event) {
       event.target.src = 'https://via.placeholder.com/1920x600?text=Banner+Image+Not+Found';
     },
@@ -206,7 +183,7 @@ export default {
         title: banner.title || '',
         subtitle: banner.subtitle || '',
       };
-      this.imagePreview = this.getBannerImageUrl(banner.imagePath);
+      this.imagePreview = banner.imagePath;
       this.selectedFile = null;
       this.errorMessage = '';
       this.showModal = true;
@@ -276,7 +253,7 @@ export default {
         this.showDeleteModal = false;
         this.bannerToDelete = null;
         await this.fetchBanners();
-      // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
       } catch (error) {
         this.errorMessage = 'Failed to delete banner';
       } finally {
@@ -547,8 +524,13 @@ export default {
   overflow-y: auto;
 }
 
-.modal-content.large { max-width: 600px; }
-.modal-content.modal-small { max-width: 400px; }
+.modal-content.large {
+  max-width: 600px;
+}
+
+.modal-content.modal-small {
+  max-width: 400px;
+}
 
 .modal-header {
   padding: 1.25rem 1.5rem;
@@ -558,9 +540,13 @@ export default {
   align-items: center;
 }
 
-.modal-body { padding: 1.5rem; }
+.modal-body {
+  padding: 1.5rem;
+}
 
-.form-group { margin-bottom: 1.25rem; }
+.form-group {
+  margin-bottom: 1.25rem;
+}
 
 .form-group label {
   display: block;
@@ -610,10 +596,17 @@ export default {
   cursor: pointer;
 }
 
-.text-center { text-align: center; }
-.warning-icon { font-size: 3rem; margin-bottom: 1rem; }
+.text-center {
+  text-align: center;
+}
 
-.loading-state, .empty-state {
+.warning-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.loading-state,
+.empty-state {
   grid-column: 1 / -1;
   padding: 5rem;
   text-align: center;
@@ -632,5 +625,13 @@ export default {
   margin: 0 auto 1rem;
 }
 
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
 </style>
