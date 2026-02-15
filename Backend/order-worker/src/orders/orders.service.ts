@@ -19,10 +19,6 @@ export class OrdersService {
     private orderItemRepository: Repository<OrderItem>,
   ) {}
 
-  /**
-   * Generate unique order number
-   * Format: ORD-YYYYMMDD-XXXXXX
-   */
   private generateOrderNumber(): string {
     const date = new Date();
     const dateStr =
@@ -35,20 +31,15 @@ export class OrdersService {
     return `ORD-${dateStr}-${random}`;
   }
 
-  /**
-   * Create a new order
-   */
   async create(createOrderDto: CreateOrderDto) {
     try {
-      // Calculate totals
       const subtotal = createOrderDto.items.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0,
       );
-      const tax = subtotal * 0.1; // 10% tax
+      const tax = subtotal * 0.1;
       const total = subtotal + tax;
 
-      // Create order
       const order = this.orderRepository.create({
         orderNumber: this.generateOrderNumber(),
         userId: createOrderDto.userId,
@@ -66,7 +57,6 @@ export class OrdersService {
 
       const savedOrder = await this.orderRepository.save(order);
 
-      // Create order items
       const orderItems = createOrderDto.items.map((item) => {
         return this.orderItemRepository.create({
           orderId: savedOrder.id,
@@ -79,8 +69,6 @@ export class OrdersService {
       });
 
       await this.orderItemRepository.save(orderItems);
-
-      // Return order with items
       return this.findOne(savedOrder.id);
     } catch (error) {
       this.logger.error(`Failed to create order: ${error.message}`);
@@ -88,9 +76,6 @@ export class OrdersService {
     }
   }
 
-  /**
-   * Find all orders (with pagination)
-   */
   async findAll(page = 1, limit = 10) {
     const [orders, total] = await this.orderRepository.findAndCount({
       relations: ['items', 'payment'],
@@ -110,9 +95,6 @@ export class OrdersService {
     };
   }
 
-  /**
-   * Find one order by ID
-   */
   async findOne(id: number) {
     const order = await this.orderRepository.findOne({
       where: { id },
@@ -126,9 +108,6 @@ export class OrdersService {
     return order;
   }
 
-  /**
-   * Find order by order number
-   */
   async findByOrderNumber(orderNumber: string) {
     const order = await this.orderRepository.findOne({
       where: { orderNumber },
@@ -142,7 +121,6 @@ export class OrdersService {
     return order;
   }
 
-  // Backend/order-worker/src/orders/orders.service.ts
   async getDashboardStats() {
     const [totalOrders, totalRevenue] = await Promise.all([
       this.orderRepository.count(),
@@ -159,9 +137,6 @@ export class OrdersService {
     };
   }
 
-  /**
-   * Find orders by user ID
-   */
   async findByUserId(userId: number, page = 1, limit = 10) {
     const [orders, total] = await this.orderRepository.findAndCount({
       where: { userId: userId as any },
@@ -182,29 +157,32 @@ export class OrdersService {
     };
   }
 
-  /**
-   * Find orders by email
-   */
-  async findByEmail(email: string) {
-    return await this.orderRepository.find({
+  async findByEmail(email: string, page = 1, limit = 10) {
+    const [orders, total] = await this.orderRepository.findAndCount({
       where: { customerEmail: email },
       relations: ['items', 'payment'],
       order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+
+    return {
+      orders,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
-  /**
-   * Update order status
-   */
   async updateStatus(id: number, status: string) {
     const order = await this.findOne(id);
     order.status = status;
     return await this.orderRepository.save(order);
   }
 
-  /**
-   * Update payment status
-   */
   async updatePaymentStatus(
     id: number,
     paymentStatus: string,
@@ -225,9 +203,6 @@ export class OrdersService {
     return await this.orderRepository.save(order);
   }
 
-  /**
-   * Update order by transaction ID
-   */
   async updateByTransactionId(transactionId: string, paymentStatus: string) {
     const order = await this.orderRepository.findOne({
       where: { transactionId },
@@ -249,9 +224,6 @@ export class OrdersService {
     return await this.orderRepository.save(order);
   }
 
-  /**
-   * Cancel order
-   */
   async cancel(id: number) {
     const order = await this.findOne(id);
 
@@ -263,17 +235,11 @@ export class OrdersService {
     return await this.orderRepository.save(order);
   }
 
-  /**
-   * Delete order (soft delete)
-   */
   async remove(id: number) {
     const order = await this.findOne(id);
     return await this.orderRepository.remove(order);
   }
 
-  /**
-   * Get order statistics
-   */
   async getStatistics() {
     const totalOrders = await this.orderRepository.count();
     const paidOrders = await this.orderRepository.count({

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
@@ -11,6 +12,7 @@ import {
   Query,
   UseGuards,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -25,9 +27,12 @@ export class OrdersController {
   @Get('my-orders')
   @UseGuards(JwtAuthGuard)
   async getMyOrders(@Req() req) {
-    console.log('User from Token:', req.user);
-    const userId = req.user.id;
-    return this.ordersService.findByUserId(userId);
+    console.log('🔍 User from Token:', req.user);
+    if (!req.user || !req.user.email) {
+      throw new UnauthorizedException('User not authenticated');
+    }
+    const userEmail = req.user.email;
+    return this.ordersService.findByEmail(userEmail);
   }
 
   @Get('stats')
