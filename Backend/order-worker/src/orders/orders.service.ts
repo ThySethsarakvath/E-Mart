@@ -17,7 +17,7 @@ export class OrdersService {
     private orderRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private orderItemRepository: Repository<OrderItem>,
-  ) {}
+  ) { }
 
   private generateOrderNumber(): string {
     const date = new Date();
@@ -126,8 +126,8 @@ export class OrdersService {
       this.orderRepository.count(),
       this.orderRepository
         .createQueryBuilder('order')
-        .select('SUM(order.totalAmount)', 'total')
-        .where('order.status = :status', { status: 'completed' })
+        .select('SUM(order.total)', 'total')
+        .where('order.paymentStatus = :status', { status: 'PAID' })
         .getRawOne(),
     ]);
 
