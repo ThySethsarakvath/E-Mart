@@ -12,7 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: process.env.JWT_ACCESS_SECRET || 'REMOVED_SECRET', // Must match Auth service
+      secret: process.env.JWT_ACCESS_SECRET || 'REMOVED_SECRET',
       signOptions: { expiresIn: '1d' },
     }),
     TypeOrmModule.forFeature([Order, OrderItem]),
