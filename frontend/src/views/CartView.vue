@@ -61,7 +61,7 @@ const proceedToPayment = () => {
 };
 
 const getImgUrl = (path) => {
-  return path ? `https://e-mart-order-worker.onrender.com/uploads/products/${path}` : '/placeholder.png';
+  return path || 'https://via.placeholder.com/150';
 };
 
 // --- Lifecycle ---

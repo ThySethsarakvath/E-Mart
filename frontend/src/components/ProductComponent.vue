@@ -14,8 +14,7 @@ const showWishlistModal = ref(false)
 
 
 const imageUrl = computed(() => {
-  if (!props.product.imagePath) return 'https://via.placeholder.com/200?text=No+Image'
-  return `https://e-mart-order-worker.onrender.com/uploads/products/${props.product.imagePath}`
+  return props.product.imagePath || 'https://via.placeholder.com/200?text=No+Image'
 })
 
 const formattedPrice = computed(() => {
@@ -73,31 +72,17 @@ const goToWishlist = () => {
   <div class="product-card" @click="goToDetails">
     <div class="icon-buttons">
       <button class="icon-btn" :class="{ active: isInWishlist }" @click.stop="toggleWishlist">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
           <path
-            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-          ></path>
+            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+          </path>
         </svg>
       </button>
 
       <button class="icon-btn" @click.stop="goToDetails">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
           <circle cx="12" cy="12" r="3"></circle>
         </svg>
@@ -122,12 +107,8 @@ const goToWishlist = () => {
         <div class="stars">
           <span v-for="i in starRating.fullStars" :key="'full-' + i" class="star filled">★</span>
           <span v-if="starRating.hasHalfStar" class="star half">★</span>
-          <span
-            v-for="i in 5 - starRating.fullStars - (starRating.hasHalfStar ? 1 : 0)"
-            :key="'empty-' + i"
-            class="star"
-            >★</span
-          >
+          <span v-for="i in 5 - starRating.fullStars - (starRating.hasHalfStar ? 1 : 0)" :key="'empty-' + i"
+            class="star">★</span>
         </div>
         <span class="review-count">({{ product.reviewCount || 0 }})</span>
       </div>
@@ -175,10 +156,12 @@ const goToWishlist = () => {
   display: flex;
   flex-direction: column;
 }
+
 .product-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
+
 .icon-buttons {
   position: absolute;
   top: 12px;
@@ -191,10 +174,12 @@ const goToWishlist = () => {
   transform: translateX(10px);
   transition: all 0.3s ease;
 }
+
 .product-card:hover .icon-buttons {
   opacity: 1;
   transform: translateX(0);
 }
+
 .icon-btn {
   background: white;
   border: none;
@@ -208,16 +193,20 @@ const goToWishlist = () => {
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .icon-btn:hover {
   background: #0d6efd;
   color: white;
 }
+
 .icon-btn:hover svg {
   stroke: white;
 }
+
 .icon-btn.active {
   color: #db4444;
 }
+
 .icon-btn.active svg {
   fill: #db4444;
   stroke: #db4444;
@@ -234,12 +223,14 @@ const goToWishlist = () => {
   padding: 20px;
   overflow: hidden;
 }
+
 .image-container img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   transition: transform 0.3s ease;
 }
+
 .product-card:hover .image-container img {
   transform: scale(1.05);
 }
@@ -259,9 +250,11 @@ const goToWishlist = () => {
   transform: translateY(100%);
   transition: transform 0.3s ease;
 }
+
 .add-to-cart-btn:hover {
   background-color: #0b5ed7;
 }
+
 .product-card:hover .add-to-cart-btn {
   transform: translateY(0);
 }
@@ -270,6 +263,7 @@ const goToWishlist = () => {
   padding: 16px;
   flex-grow: 1;
 }
+
 .category-tag {
   font-size: 11px;
   color: #999;
@@ -279,6 +273,7 @@ const goToWishlist = () => {
   display: block;
   font-weight: 600;
 }
+
 .product-name {
   font-size: 16px;
   font-weight: 600;
@@ -288,6 +283,7 @@ const goToWishlist = () => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .product-desc {
   font-size: 13px;
   color: #666;
@@ -300,39 +296,47 @@ const goToWishlist = () => {
   line-height: 1.4;
   height: 36px;
 }
+
 .price-container {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
 }
+
 .final-price {
   font-size: 18px;
   font-weight: 700;
   color: #0d6efd;
 }
+
 .rating-container {
   display: flex;
   align-items: center;
   gap: 6px;
 }
+
 .stars {
   display: flex;
   gap: 2px;
 }
+
 .star {
   color: #e0e0e0;
   font-size: 14px;
 }
+
 .star.filled {
   color: #ffc107;
 }
+
 .star.half {
   background: linear-gradient(90deg, #ffc107 50%, #e0e0e0 50%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
 .review-count {
   font-size: 12px;
   color: #999;
@@ -358,6 +362,7 @@ const goToWishlist = () => {
   padding: 20px;
   width: 90%;
 }
+
 .modal-icon {
   width: 40px;
   height: 40px;
@@ -373,14 +378,17 @@ const goToWishlist = () => {
 .cart-icon {
   background: #0d6efd;
 }
+
 .heart-icon {
   background: #ff0080;
 }
+
 .blue-text {
   color: #0d6efd;
   margin-bottom: 5px;
   font-size: 16px;
 }
+
 .pink-text {
   color: #ff0080;
   margin-bottom: 5px;
@@ -401,6 +409,7 @@ const goToWishlist = () => {
   flex-direction: column;
   gap: 8px;
 }
+
 .btn-continue,
 .btn-view-cart,
 .btn-view-wishlist {
@@ -411,24 +420,30 @@ const goToWishlist = () => {
   cursor: pointer;
   border: none;
 }
+
 .btn-continue {
   background: #eee;
   color: #333;
 }
+
 .btn-continue:hover {
   background: #ddd;
 }
+
 .btn-view-cart {
   background: #0d6efd;
   color: white;
 }
+
 .btn-view-cart:hover {
   background: #0b5ed7;
 }
+
 .btn-view-wishlist {
   background: #ff0080;
   color: white;
 }
+
 .btn-view-wishlist:hover {
   background: #d9006c;
 }
@@ -437,6 +452,7 @@ const goToWishlist = () => {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }

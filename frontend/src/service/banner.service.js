@@ -47,11 +47,9 @@ export default {
 
   getBannerImageUrl(imagePath) {
     if (!imagePath) return 'https://via.placeholder.com/1920x600?text=No+Image';
-    // If it's already a full URL (Cloudinary), return as-is
     if (imagePath.startsWith('http')) {
       return imagePath;
     }
-    // Legacy support: if it's still a local path (shouldn't happen after migration)
     return imagePath;
   },
 };

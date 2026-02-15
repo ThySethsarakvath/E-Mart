@@ -15,8 +15,7 @@ const moveToCart = (product) => {
 };
 
 const getImgUrl = (path) => {
-  if (!path) return 'https://via.placeholder.com/150';
-  return `https://e-mart-order-worker.onrender.com/uploads/products/${path}`;
+  return path || 'https://via.placeholder.com/150';
 };
 </script>
 

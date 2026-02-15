@@ -16,12 +16,7 @@
     <div class="search-section">
       <div class="search-box">
         <span class="search-icon">🔍</span>
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search products by name..."
-          class="search-input"
-        />
+        <input v-model="searchQuery" type="text" placeholder="Search products by name..." class="search-input" />
       </div>
     </div>
 
@@ -41,11 +36,8 @@
           <tr v-for="product in filteredProducts" :key="product.id">
             <td>
               <div class="image-wrapper">
-                <img
-                  :src="productService.getProductImageUrl(product.imagePath)"
-                  :alt="product.name"
-                  class="table-img"
-                />
+                <img :src="product.imagePath || 'https://via.placeholder.com/200x200?text=No+Image'" :alt="product.name"
+                  class="table-img" />
               </div>
             </td>
             <td>
@@ -64,8 +56,8 @@
             <td class="rating-cell">
               <div>
                 <span class="star-icon">⭐</span>
-              {{ product.rating || 0 }}
-            </div>
+                {{ product.rating || 0 }}
+              </div>
             </td>
             <td>
               <div class="actions">
@@ -84,7 +76,8 @@
       <div v-if="filteredProducts.length === 0" class="empty-state">
         <div class="empty-icon">📦</div>
         <p>No products found</p>
-        <p class="empty-hint">{{ searchQuery ? 'Try adjusting your search' : 'Add your first product to get started' }}</p>
+        <p class="empty-hint">{{ searchQuery ? 'Try adjusting your search' : 'Add your first product to get started' }}
+        </p>
       </div>
     </div>
 
@@ -112,15 +105,8 @@
                 <span>Click to upload product image</span>
                 <span class="upload-hint">Recommended size: 800x800px (Max 5MB)</span>
               </label>
-              <input
-                id="product-image-input"
-                type="file"
-                accept="image/*"
-                @change="handleFileUpload"
-                style="display: none"
-                ref="fileInput"
-                :required="!isEditing"
-              />
+              <input id="product-image-input" type="file" accept="image/*" @change="handleFileUpload"
+                style="display: none" ref="fileInput" :required="!isEditing" />
             </div>
             <p v-if="isEditing" class="hint-text">Leave empty to keep current image</p>
           </div>
@@ -129,24 +115,12 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Product Name <span class="required">*</span></label>
-              <input
-                v-model="formData.name"
-                required
-                type="text"
-                placeholder="Enter product name"
-                class="form-input"
-              />
+              <input v-model="formData.name" required type="text" placeholder="Enter product name" class="form-input" />
             </div>
             <div class="form-group">
               <label>Price ($) <span class="required">*</span></label>
-              <input
-                v-model="formData.price"
-                required
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                class="form-input"
-              />
+              <input v-model="formData.price" required type="number" step="0.01" placeholder="0.00"
+                class="form-input" />
             </div>
           </div>
 
@@ -173,12 +147,8 @@
 
           <div class="form-group">
             <label>Description</label>
-            <textarea
-              v-model="formData.description"
-              rows="4"
-              placeholder="Enter product description"
-              class="form-input"
-            ></textarea>
+            <textarea v-model="formData.description" rows="4" placeholder="Enter product description"
+              class="form-input"></textarea>
           </div>
 
           <div v-if="errorMessage" class="error-message">
@@ -305,7 +275,7 @@ export default {
           subCategoryId: product.subCategoryId,
           image: null
         };
-        this.imagePreview = productService.getProductImageUrl(product.imagePath);
+        this.imagePreview = product.imagePath;
       } else {
         this.isEditing = false;
         this.formData = {
@@ -366,7 +336,7 @@ export default {
         this.showDeleteModal = false;
         this.productToDelete = null;
         await this.fetchData();
-      // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
       } catch (err) {
         this.errorMessage = 'Failed to delete product';
       } finally {
@@ -582,7 +552,8 @@ export default {
 
 .rating-cell {
   align-items: center;
-  gap: 0.25rem;;
+  gap: 0.25rem;
+  ;
   font-weight: 500;
 }
 

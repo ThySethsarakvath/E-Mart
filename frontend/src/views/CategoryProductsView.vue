@@ -57,14 +57,14 @@ export default {
 <template>
   <div class="category-page">
     <div v-if="category" class="header-section">
-        <h1 class="title">{{ category.name }}</h1>
-        <p class="subtitle">{{ descriptionText }}</p>
+      <h1 class="title">{{ category.name }}</h1>
+      <p class="subtitle">{{ descriptionText }}</p>
     </div>
 
     <div class="products-grid">
       <div v-for="product in products" :key="product.id" class="product-card">
         <div class="image-wrapper">
-          <img :src="`https://e-mart-order-worker.onrender.com/uploads/products/${product.imagePath}`" :alt="product.name">
+          <img :src="product.imagePath || 'https://via.placeholder.com/400x400?text=No+Image'" :alt="product.name">
         </div>
         <div class="product-info">
           <h3>{{ product.name }}</h3>
@@ -75,8 +75,8 @@ export default {
     </div>
 
     <div v-if="products.length === 0" class="no-products">
-        <p>No products found in this category yet.</p>
-        <router-link to="/">Go Back Home</router-link>
+      <p>No products found in this category yet.</p>
+      <router-link to="/">Go Back Home</router-link>
     </div>
   </div>
 </template>
@@ -121,7 +121,7 @@ export default {
 
 .product-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .image-wrapper {
