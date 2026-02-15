@@ -12,8 +12,8 @@ async function bootstrap() {
   });
 
   const configService = app.get(ConfigService);
-  console.log('JWT_ACCESS_SECRET:', configService.get('JWT_ACCESS_SECRET'));
-  console.log('JWT_ACCESS_EXPIRES:', configService.get('JWT_ACCESS_EXPIRES'));
+  const corsOrigins =
+    configService.get<string>('FRONTEND_URL')?.split(',').filter(Boolean) || [];
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -23,18 +23,13 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: [
-      'https://e-mart-frontend-38lv.onrender.com',
-      'http://localhost:5173',
-    ],
+    origin: [...corsOrigins, 'http://localhost:5173'],
     credentials: true,
   });
 
   const port = process.env.PORT || 3000;
   const server = await app.listen(port);
   server.setTimeout(60000);
-
-  console.log(`API Gateway running on port ${port}`);
 }
 
 bootstrap();

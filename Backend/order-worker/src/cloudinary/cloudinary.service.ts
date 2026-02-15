@@ -36,7 +36,6 @@ export class CloudinaryService {
         },
       );
 
-      // Convert buffer to stream
       const { Readable } = require('stream');
       const stream = Readable.from(file.buffer);
       stream.pipe(uploadStream);
@@ -51,12 +50,9 @@ export class CloudinaryService {
     }
   }
 
-  // Extract public_id from Cloudinary URL
   extractPublicId(url: string): string | null {
     if (!url) return null;
-
-    // Example URL: https://res.cloudinary.com/REMOVED_SECRET/image/upload/v1234567890/emart/banners/filename.jpg
     const match = url.match(/\/emart\/[^/]+\/[^.]+/);
-    return match ? match[0].substring(1) : null; // Remove leading slash
+    return match ? match[0].substring(1) : null;
   }
 }

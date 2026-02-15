@@ -15,7 +15,7 @@ export class BannersService {
   constructor(
     @InjectRepository(Banner)
     private readonly bannerRepo: Repository<Banner>,
-    private readonly cloudinaryService: CloudinaryService, // ✅ Inject Cloudinary
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   findAll() {
@@ -27,7 +27,6 @@ export class BannersService {
       throw new Error('Image file is required');
     }
 
-    // ✅ Upload to Cloudinary
     const uploadResult = await this.cloudinaryService.uploadImage(
       file,
       'banners',
@@ -36,7 +35,7 @@ export class BannersService {
     const banner = this.bannerRepo.create({
       title: dto.title,
       subtitle: dto.subtitle,
-      imagePath: uploadResult.secure_url, // ✅ Store full Cloudinary URL
+      imagePath: uploadResult.secure_url,
     });
 
     return {
@@ -60,9 +59,7 @@ export class BannersService {
       banner.subtitle = dto.subtitle;
     }
 
-    // Update image if new one uploaded
     if (file) {
-      // ✅ Delete old image from Cloudinary
       const oldPublicId = this.cloudinaryService.extractPublicId(
         banner.imagePath,
       );
@@ -70,7 +67,6 @@ export class BannersService {
         await this.cloudinaryService.deleteImage(oldPublicId);
       }
 
-      // ✅ Upload new image
       const uploadResult = await this.cloudinaryService.uploadImage(
         file,
         'banners',
@@ -90,8 +86,6 @@ export class BannersService {
     if (!banner) {
       throw new NotFoundException(`Banner with ID ${id} not found`);
     }
-
-    // ✅ Delete image from Cloudinary
     const publicId = this.cloudinaryService.extractPublicId(banner.imagePath);
     if (publicId) {
       await this.cloudinaryService.deleteImage(publicId);

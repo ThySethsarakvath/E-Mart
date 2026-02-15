@@ -38,7 +38,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found or inactive');
     }
 
-    // Extract roles and permissions
     const roles = user.userRoles.map((ur) => ur.role.name);
     const permissions = user.userRoles
       .flatMap((ur) => ur.role.rolePermissions)

@@ -17,9 +17,7 @@ export class AuthIntrospectionService {
 
   async validateToken(token: string): Promise<any> {
     try {
-      const authServiceUrl =
-        this.configService.get('AUTH_SERVICE_URL') ||
-        'http://e-mart-auth-service-1:3000';
+      const authServiceUrl = this.configService.get('AUTH_SERVICE_URL');
 
       const response = await firstValueFrom(
         this.httpService.get(`${authServiceUrl}/auth/me`, {

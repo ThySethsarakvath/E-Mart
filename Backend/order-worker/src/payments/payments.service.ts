@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger, forwardRef, Inject } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
@@ -8,13 +10,11 @@ import { Payment } from './entity/payment.entity';
 import * as qs from 'qs';
 import { CreateQrDto } from './dto/create-qr.dto';
 import { OrdersService } from '../orders/orders.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
-  // Centralizing credentials for consistency
-  private readonly merchantId = 'REMOVED_SECRET';
-  private readonly apiKey = 'REMOVED_SECRET';
 
   constructor(
     private http: HttpService,
@@ -22,7 +22,18 @@ export class PaymentsService {
     private paymentRepository: Repository<Payment>,
     @Inject(forwardRef(() => OrdersService))
     private ordersService: OrdersService,
+    private configService: ConfigService,
   ) {}
+
+  private get merchantId() {
+    return this.configService.get<string>('PAYWAY_MERCHANT_ID');
+  }
+  private get apiKey() {
+    return this.configService.get<string>('PAYWAY_API_KEY');
+  }
+  private get baseUrl() {
+    return this.configService.get<string>('PAYWAY_SANDBOX_URL');
+  }
 
   private generateHash(data: string): string {
     if (!this.apiKey) throw new Error('PAYWAY_API_KEY is not set');
@@ -75,9 +86,11 @@ export class PaymentsService {
 
       this.logger.log(`Order created: ${order.orderNumber} (ID: ${order.id})`);
 
-      const sandboxUrl =
-        'https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments/generate-qr';
-
+      const sandboxUrl = `${this.baseUrl}/payments/generate-qr`;
+      const lifetime =
+        this.configService.get<number>('PAYWAY_QR_LIFETIME') || 5;
+      const callbackUrl =
+        this.configService.get<string>('PAYWAY_CALLBACK_URL') || '';
       const tranId = this.generateTransactionId();
       const reqTime = new Date()
         .toISOString()
@@ -98,15 +111,12 @@ export class PaymentsService {
         },
       ]);
       const itemsBase64 = Buffer.from(itemsJson).toString('base64');
-      const callbackBase64 = Buffer.from('https://webhook.site/test').toString(
-        'base64',
-      );
+      const callbackBase64 = Buffer.from(callbackUrl).toString('base64');
 
       const returnDeeplink = '';
       const customFields = '';
       const returnParams = '';
       const payout = '';
-      const lifetime = 6;
       const qrTemplate = 'template3_color';
       const currency = 'USD';
       const purchaseType = 'purchase';
@@ -218,11 +228,9 @@ export class PaymentsService {
       };
 
       const { data } = await this.http.axiosRef.post(
-        `https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments/check-transaction`,
+        `${this.baseUrl}/payments/check-transaction`,
         qs.stringify(payload),
-        {
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        },
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
       );
 
       const payment = await this.paymentRepository.findOne({
