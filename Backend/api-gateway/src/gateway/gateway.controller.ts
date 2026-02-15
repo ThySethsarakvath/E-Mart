@@ -24,17 +24,9 @@ export class GatewayController {
 
       let service: 'auth-service' | 'order-worker';
 
-      // ===============================
-      // AUTH ROUTES
-      // ===============================
       if (path.startsWith('/auth') || path.startsWith('/users')) {
         service = 'auth-service';
-      }
-
-      // ===============================
-      // ORDER WORKER ROUTES
-      // ===============================
-      else if (
+      } else if (
         path.startsWith('/products') ||
         path.startsWith('/banners') ||
         path.startsWith('/arrivals') ||

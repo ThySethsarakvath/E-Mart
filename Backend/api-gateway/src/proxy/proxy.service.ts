@@ -20,13 +20,14 @@ export class ProxyService {
     private httpService: HttpService,
     private configService: ConfigService,
   ) {
-    this.ORDER_WORKER_URL =
-      this.configService.get('ORDER_WORKER_URL') ||
-      'http://e-mart-order-worker-1:3000';
-
-    this.AUTH_SERVICE_URL =
-      this.configService.get('AUTH_SERVICE_URL') ||
-      'http://e-mart-auth-service-1:3000';
+    this.ORDER_WORKER_URL = this.configService.get<string>(
+      'ORDER_WORKER_URL',
+      '',
+    );
+    this.AUTH_SERVICE_URL = this.configService.get<string>(
+      'AUTH_SERVICE_URL',
+      '',
+    );
   }
 
   async forwardRequest(
@@ -44,15 +45,11 @@ export class ProxyService {
         : this.AUTH_SERVICE_URL;
 
     const url = `${baseUrl}${path}`;
-
-    // ===========================
-    // CLEAN HOP-BY-HOP HEADERS
-    // ===========================
     const cleanHeaders = { ...headers };
 
     delete cleanHeaders.host;
     delete cleanHeaders.connection;
-    delete cleanHeaders['content-length']; // critical for multipart
+    delete cleanHeaders['content-length'];
 
     const isMultipart = headers['content-type']?.includes(
       'multipart/form-data',
@@ -67,10 +64,6 @@ export class ProxyService {
       maxBodyLength: Infinity,
       maxContentLength: Infinity,
     };
-
-    // ===========================
-    // BODY HANDLING
-    // ===========================
     if (isMultipart && rawRequest) {
       // stream raw request for file uploads
       config.data = rawRequest;
