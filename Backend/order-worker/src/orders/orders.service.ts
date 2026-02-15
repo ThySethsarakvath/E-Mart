@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -138,6 +140,23 @@ export class OrdersService {
     }
 
     return order;
+  }
+
+  // Backend/order-worker/src/orders/orders.service.ts
+  async getDashboardStats() {
+    const [totalOrders, totalRevenue] = await Promise.all([
+      this.orderRepository.count(),
+      this.orderRepository
+        .createQueryBuilder('order')
+        .select('SUM(order.totalAmount)', 'total')
+        .where('order.status = :status', { status: 'completed' })
+        .getRawOne(),
+    ]);
+
+    return {
+      totalOrders,
+      totalRevenue: parseFloat(totalRevenue?.total || '0'),
+    };
   }
 
   /**

@@ -1,6 +1,10 @@
 <template>
   <div class="dashboard">
     <div class="stats-grid">
+      <div v-if="error" class="error-banner">
+        ⚠️ {{ error }}
+        <button @click="fetchDashboardData">Retry</button>
+      </div>
       <div class="stat-card">
         <div class="stat-icon">📦</div>
         <div class="stat-info">
@@ -50,9 +54,10 @@
 import { ref, onMounted } from 'vue';
 import orderService from '@/service/orders.service';
 import userService from '@/service/user.service';
-import productService from '@/service/product.service'; // Adjust if named differently
+import productService from '@/service/product.service';
 
 const loading = ref(true);
+const error = ref(null);
 const stats = ref({
   products: 0,
   totalOrders: 0,
@@ -66,23 +71,35 @@ const formatCurrency = (val) => {
 
 const fetchDashboardData = async () => {
   loading.value = true;
-  try {
-    // Run all fetches in parallel for speed
-    const [orderStats, userList, productData] = await Promise.all([
-      orderService.getDashboardStats(),
-      userService.getAllUsers(),
-      productService.getAllProducts(1, 1) // Fetch 1 item just to get total from pagination
-    ]);
+  error.value = null;
 
-    stats.value = {
-      totalOrders: orderStats.totalOrders,
-      totalRevenue: orderStats.totalRevenue,
-      users: userList.length,
-      // Adjust based on your product API response structure
-      products: productData.pagination?.total || productData.length
-    };
-  } catch (error) {
-    console.error("Dashboard load failed:", error);
+  try {
+    // Fetch order stats
+    const orderStats = await orderService.getDashboardStats();
+    stats.value.totalOrders = orderStats.totalOrders || 0;
+    stats.value.totalRevenue = orderStats.totalRevenue || 0;
+
+    // Fetch users count
+    try {
+      const userList = await userService.getAllUsers();
+      stats.value.users = Array.isArray(userList) ? userList.length : 0;
+    } catch (err) {
+      console.warn('Failed to fetch users:', err);
+      stats.value.users = 0;
+    }
+
+    // Fetch products count
+    try {
+      const productData = await productService.getAllProducts(1, 1);
+      stats.value.products = productData.pagination?.total || productData.length || 0;
+    } catch (err) {
+      console.warn('Failed to fetch products:', err);
+      stats.value.products = 0;
+    }
+
+  } catch (err) {
+    console.error("Dashboard load failed:", err);
+    error.value = err.message || 'Failed to load dashboard data';
   } finally {
     loading.value = false;
   }
@@ -92,6 +109,29 @@ onMounted(fetchDashboardData);
 </script>
 
 <style scoped>
+.error-banner {
+  background: #fee;
+  color: #c33;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.error-banner button {
+  background: #c33;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.error-banner button:hover {
+  background: #a22;
+}
 .dashboard {
   max-width: 1400px;
 }

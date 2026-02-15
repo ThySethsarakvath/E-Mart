@@ -9,6 +9,17 @@ const getAuthHeader = () => {
 }
 
 export default {
+
+  async getDashboardStats() {
+    try {
+      const response = await apiClient.get('/orders/stats');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+      throw error.response?.data || error.message;
+    }
+  },
+
   // Matches @Get() findAll()
   async getAllOrders(page = 1, limit = 50) {
     const response = await axios.get(`${API_URL}?page=${page}&limit=${limit}`, {
