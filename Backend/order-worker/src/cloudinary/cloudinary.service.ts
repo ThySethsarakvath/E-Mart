@@ -4,7 +4,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
 import { Injectable } from '@nestjs/common';
-import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+import {
+  v2 as cloudinary,
+  UploadApiResponse,
+  UploadApiErrorResponse,
+} from 'cloudinary';
 
 @Injectable()
 export class CloudinaryService {
@@ -18,8 +22,16 @@ export class CloudinaryService {
           folder: `emart/${folder}`,
           resource_type: 'image',
         },
-        (error, result) => {
-          if (error) return reject(error);
+        (
+          error: UploadApiErrorResponse | undefined,
+          result: UploadApiResponse | undefined,
+        ) => {
+          if (error) {
+            return reject(error);
+          }
+          if (!result) {
+            return reject(new Error('Upload failed: No result returned'));
+          }
           resolve(result);
         },
       );
