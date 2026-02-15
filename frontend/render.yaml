@@ -1,0 +1,10 @@
+# frontend/render.yaml
+services:
+  - type: web
+    name: e-mart-frontend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
