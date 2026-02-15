@@ -4,16 +4,16 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Promotion } from './entities/promotion.entity';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class PromotionsService {
   constructor(
     @InjectRepository(Promotion)
     private readonly promotionRepo: Repository<Promotion>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   findAll() {
@@ -21,13 +21,20 @@ export class PromotionsService {
   }
 
   async create(dto: CreatePromotionDto, file: Express.Multer.File) {
-    // dto already has numbers because of @Type(() => Number) in DTO
+    if (!file) {
+      throw new Error('Image file is required');
+    }
+    const uploadResult = await this.cloudinaryService.uploadImage(
+      file,
+      'promotions',
+    );
+
     const finalPrice =
       dto.originalPrice - (dto.originalPrice * dto.discountPercent) / 100;
 
     const promotion = this.promotionRepo.create({
       ...dto,
-      imagePath: file.filename,
+      imagePath: uploadResult.secure_url,
       finalPrice: finalPrice,
     });
 
@@ -48,11 +55,8 @@ export class PromotionsService {
       throw new NotFoundException(`Promotion with ID ${id} not found`);
     }
 
-    // This automatically updates name, rating, reviewCount, etc.
-    // No more parseFloat() needed because dto.rating is already a number!
     Object.assign(promotion, dto);
 
-    // Recalculate finalPrice if price or discount changed
     if (dto.originalPrice !== undefined || dto.discountPercent !== undefined) {
       promotion.finalPrice =
         promotion.originalPrice -
@@ -60,12 +64,17 @@ export class PromotionsService {
     }
 
     if (file) {
-      try {
-        await unlink(join('./uploads/promotions', promotion.imagePath));
-      } catch (error) {
-        // Ignore if old file is missing
+      const oldPublicId = this.cloudinaryService.extractPublicId(
+        promotion.imagePath,
+      );
+      if (oldPublicId) {
+        await this.cloudinaryService.deleteImage(oldPublicId);
       }
-      promotion.imagePath = file.filename;
+      const uploadResult = await this.cloudinaryService.uploadImage(
+        file,
+        'promotions',
+      );
+      promotion.imagePath = uploadResult.secure_url;
     }
 
     return {
@@ -81,9 +90,12 @@ export class PromotionsService {
       throw new NotFoundException(`Promotion with ID ${id} not found`);
     }
 
-    try {
-      await unlink(join('./uploads/promotions', promotion.imagePath));
-    } catch (error) {}
+    const publicId = this.cloudinaryService.extractPublicId(
+      promotion.imagePath,
+    );
+    if (publicId) {
+      await this.cloudinaryService.deleteImage(publicId);
+    }
 
     await this.promotionRepo.remove(promotion);
 

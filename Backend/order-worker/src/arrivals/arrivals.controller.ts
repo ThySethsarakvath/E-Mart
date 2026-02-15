@@ -16,8 +16,6 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { ArrivalsService } from './arrivals.service';
 
 @Controller('arrivals')
@@ -30,18 +28,8 @@ export class ArrivalsController {
   }
 
   @Post()
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads/arrivals',
-        filename: (req, file, callback) => {
-          const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, `${uniqueName}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
-  create(@Body() body: any, @UploadedFile() file: any) {
+  @UseInterceptors(FileInterceptor('image'))
+  create(@Body() body: any, @UploadedFile() file: Express.Multer.File) {
     return this.arrivalsService.create({
       title: body.title,
       subtitle: body.subtitle,
@@ -51,21 +39,11 @@ export class ArrivalsController {
   }
 
   @Patch(':id')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads/arrivals',
-        filename: (req, file, callback) => {
-          const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, `${uniqueName}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image'))
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: any,
-    @UploadedFile() file?: any,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
     return this.arrivalsService.update(id, {
       title: body.title,

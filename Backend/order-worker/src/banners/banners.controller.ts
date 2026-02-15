@@ -31,7 +31,7 @@ export class BannersController {
   }
 
   @Post()
-  @UseInterceptors(FileInterceptor('image')) // ✅ Simplified - no disk storage
+  @UseInterceptors(FileInterceptor('image'))
   create(
     @Body() body: CreateBannerDto,
     @UploadedFile() file: Express.Multer.File,
@@ -40,7 +40,7 @@ export class BannersController {
   }
 
   @Patch(':id')
-  @UseInterceptors(FileInterceptor('image')) // ✅ Simplified - no disk storage
+  @UseInterceptors(FileInterceptor('image'))
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateBannerDto,

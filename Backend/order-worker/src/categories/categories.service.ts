@@ -5,8 +5,7 @@ import { Categories } from './entities/categories.entity';
 import { SubCategory } from './entities/subcategory.entity';
 import { CreateCategoriesDto } from './dto/create-categories.dto';
 import { UpdateCategoriesDto } from './dto/update-categories.dto';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class CategoriesService {
@@ -16,17 +15,28 @@ export class CategoriesService {
 
     @InjectRepository(SubCategory)
     private readonly subCategoriesRepo: Repository<SubCategory>,
+
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async create(
     dto: CreateCategoriesDto,
-    imagePath: string,
+    file: Express.Multer.File,
   ): Promise<Categories> {
-    const categories = this.categoriesRepo.create({
+    if (!file) {
+      throw new Error('Image file is required');
+    }
+    const uploadResult = await this.cloudinaryService.uploadImage(
+      file,
+      'categories',
+    );
+
+    const category = this.categoriesRepo.create({
       name: dto.name,
-      imagePath,
+      imagePath: uploadResult.secure_url,
     });
-    return this.categoriesRepo.save(categories);
+
+    return this.categoriesRepo.save(category);
   }
 
   async findAll(): Promise<Categories[]> {
@@ -48,18 +58,29 @@ export class CategoriesService {
     return category;
   }
 
-  async update(id: number, updateCategoriesDto: UpdateCategoriesDto) {
+  async update(
+    id: number,
+    dto: UpdateCategoriesDto,
+    file?: Express.Multer.File,
+  ) {
     const category = await this.findOne(id);
 
-    if (updateCategoriesDto.name) {
-      category.name = updateCategoriesDto.name;
+    if (dto.name) {
+      category.name = dto.name;
     }
 
-    if (updateCategoriesDto.imagePath) {
-      try {
-        await unlink(join('./uploads/categories', category.imagePath));
-      } catch (error) {}
-      category.imagePath = updateCategoriesDto.imagePath;
+    if (file) {
+      const oldPublicId = this.cloudinaryService.extractPublicId(
+        category.imagePath,
+      );
+      if (oldPublicId) {
+        await this.cloudinaryService.deleteImage(oldPublicId);
+      }
+      const uploadResult = await this.cloudinaryService.uploadImage(
+        file,
+        'categories',
+      );
+      category.imagePath = uploadResult.secure_url;
     }
 
     return this.categoriesRepo.save(category);
@@ -68,9 +89,10 @@ export class CategoriesService {
   async remove(id: number) {
     const category = await this.findOne(id);
 
-    try {
-      await unlink(join('./uploads/categories', category.imagePath));
-    } catch (error) {}
+    const publicId = this.cloudinaryService.extractPublicId(category.imagePath);
+    if (publicId) {
+      await this.cloudinaryService.deleteImage(publicId);
+    }
 
     return this.categoriesRepo.remove(category);
   }
@@ -95,7 +117,7 @@ export class CategoriesService {
 
   async findAllSubCategories() {
     return this.subCategoriesRepo.find({
-      relations: ['category'], // Load parent info
+      relations: ['category'],
     });
   }
 

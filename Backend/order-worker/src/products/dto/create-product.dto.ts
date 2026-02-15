@@ -6,14 +6,14 @@ export class CreateProductDto {
   @IsString()
   name: string;
 
-  @Type(() => Number) // 👈 Convert "99.99" to 99.99
+  @Type(() => Number)
   @IsNumber()
   price: number;
 
   @IsString()
   description: string;
 
-  @Type(() => Number) // 👈 Convert "5" to 5
+  @Type(() => Number)
   @IsNumber()
   categoryId: number;
 

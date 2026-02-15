@@ -12,8 +12,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { CategoriesService } from './categories.service';
 import { CreateCategoriesDto } from './dto/create-categories.dto';
 import { UpdateCategoriesDto } from './dto/update-categories.dto';
@@ -53,46 +51,22 @@ export class CategoriesController {
   }
 
   @Post()
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads/categories',
-        filename: (req, file, callback) => {
-          const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, `${uniqueName}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
-  create(@Body() dto: CreateCategoriesDto, @UploadedFile() file: any) {
-    // If file exists, attach the filename to the DTO
-    if (file) {
-      dto.imagePath = file.filename;
-    }
-    return this.categoriesService.create(dto, file?.filename || '');
+  @UseInterceptors(FileInterceptor('image'))
+  create(
+    @Body() dto: CreateCategoriesDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.categoriesService.create(dto, file);
   }
 
   @Patch(':id')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads/categories',
-        filename: (req, file, callback) => {
-          const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, `${uniqueName}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image'))
   update(
     @Param('id') id: string,
     @Body() dto: UpdateCategoriesDto,
-    @UploadedFile() file?: any,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    if (file) {
-      dto.imagePath = file.filename;
-    }
-    return this.categoriesService.update(+id, dto);
+    return this.categoriesService.update(+id, dto, file);
   }
 
   @Delete(':id')

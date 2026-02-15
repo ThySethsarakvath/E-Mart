@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -6,14 +7,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Arrival } from './entities/arrivals.entities';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class ArrivalsService {
   constructor(
     @InjectRepository(Arrival)
     private readonly arrivalsRepo: Repository<Arrival>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   findAll() {
@@ -21,10 +22,19 @@ export class ArrivalsService {
   }
 
   async create(data: any) {
+    if (!data.image) {
+      throw new Error('Image file is required');
+    }
+
+    const uploadResult = await this.cloudinaryService.uploadImage(
+      data.image,
+      'arrivals',
+    );
+
     const arrival = this.arrivalsRepo.create({
       title: data.title,
       subtitle: data.subtitle,
-      imagePath: data.image.filename,
+      imagePath: uploadResult.secure_url,
       link: data.link || null,
     });
 
@@ -52,12 +62,17 @@ export class ArrivalsService {
     }
 
     if (data.image) {
-      try {
-        await unlink(join('./uploads/arrivals', arrival.imagePath));
-      } catch (error) {
-        // Ignore
+      const oldPublicId = this.cloudinaryService.extractPublicId(
+        arrival.imagePath,
+      );
+      if (oldPublicId) {
+        await this.cloudinaryService.deleteImage(oldPublicId);
       }
-      arrival.imagePath = data.image.filename;
+      const uploadResult = await this.cloudinaryService.uploadImage(
+        data.image,
+        'arrivals',
+      );
+      arrival.imagePath = uploadResult.secure_url;
     }
 
     return {
@@ -72,11 +87,9 @@ export class ArrivalsService {
     if (!arrival) {
       throw new NotFoundException(`Arrival with ID ${id} not found`);
     }
-
-    try {
-      await unlink(join('./uploads/arrivals', arrival.imagePath));
-    } catch (error) {
-      // Ignore
+    const publicId = this.cloudinaryService.extractPublicId(arrival.imagePath);
+    if (publicId) {
+      await this.cloudinaryService.deleteImage(publicId);
     }
 
     await this.arrivalsRepo.remove(arrival);

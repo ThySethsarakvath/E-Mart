@@ -8,11 +8,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Categories } from '../categories/entities/categories.entity';
 import { SubCategory } from '../categories/entities/subcategory.entity';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class ProductsService {
@@ -25,16 +24,22 @@ export class ProductsService {
 
     @InjectRepository(SubCategory)
     private subCategoryRepo: Repository<SubCategory>,
+
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async create(createProductDto: CreateProductDto, imageFilename: string) {
-    const catId = Number(createProductDto.categoryId);
+  async create(createProductDto: CreateProductDto, file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Product image is required');
+    }
 
+    const catId = Number(createProductDto.categoryId);
     if (isNaN(catId)) {
       throw new BadRequestException(
         `Invalid Category ID: ${createProductDto.categoryId}`,
       );
     }
+
     const category = await this.categoryRepo.findOne({
       where: { id: catId },
     });
@@ -47,10 +52,14 @@ export class ProductsService {
       });
       if (!subCategory) throw new NotFoundException('SubCategory not found');
     }
+    const uploadResult = await this.cloudinaryService.uploadImage(
+      file,
+      'products',
+    );
 
     const newProduct = this.productsRepository.create({
       ...createProductDto,
-      imagePath: imageFilename,
+      imagePath: uploadResult.secure_url,
       category: category,
       ...(subCategory && { subCategory }),
     });
@@ -86,13 +95,12 @@ export class ProductsService {
 
   async remove(id: number) {
     const product = await this.findOne(id);
-
     if (product.imagePath) {
-      try {
-        await unlink(join('./uploads/products', product.imagePath));
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
-        // Ignore file not found errors
+      const publicId = this.cloudinaryService.extractPublicId(
+        product.imagePath,
+      );
+      if (publicId) {
+        await this.cloudinaryService.deleteImage(publicId);
       }
     }
 
@@ -102,26 +110,27 @@ export class ProductsService {
   async update(
     id: number,
     updateProductDto: UpdateProductDto,
-    imageFilename: string | null,
+    file?: Express.Multer.File,
   ) {
     const product = await this.findOne(id);
-
-    // Update basic fields
     Object.assign(product, updateProductDto);
-
-    // Update Image if provided
-    if (imageFilename) {
+    if (file) {
       if (product.imagePath) {
-        try {
-          await unlink(join('./uploads/products', product.imagePath));
-        } catch (err) {
-          console.error('Error deleting old image:', err);
+        const oldPublicId = this.cloudinaryService.extractPublicId(
+          product.imagePath,
+        );
+        if (oldPublicId) {
+          await this.cloudinaryService.deleteImage(oldPublicId);
         }
       }
-      product.imagePath = imageFilename;
+
+      const uploadResult = await this.cloudinaryService.uploadImage(
+        file,
+        'products',
+      );
+      product.imagePath = uploadResult.secure_url;
     }
 
-    // Update Category Relation
     if (updateProductDto.categoryId) {
       const category = await this.categoryRepo.findOne({
         where: { id: +updateProductDto.categoryId },

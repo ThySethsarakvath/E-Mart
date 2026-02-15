@@ -325,12 +325,86 @@ async function migratePromotions() {
   }
 }
 
+async function migrateCategories() {
+  console.log('\n📤 Starting categories images migration...\n');
+  
+  const client = new Client({ connectionString: DATABASE_URL });
+
+  try {
+    await client.connect();
+
+    let result;
+    try {
+      result = await client.query(
+        'SELECT id, name, "imagePath" FROM categories WHERE "imagePath" IS NOT NULL'
+      );
+    } catch (error) {
+      result = await client.query(
+        'SELECT id, name, imagepath FROM categories WHERE imagepath IS NOT NULL'
+      );
+    }
+
+    console.log(`Found ${result.rows.length} categories to migrate\n`);
+
+    for (const row of result.rows) {
+      const { id, name } = row;
+      const imagePath = row.imagePath || row.imagepath;
+
+      if (imagePath.startsWith('http')) {
+        console.log(`⏭️  Skipping category #${id} (${name}) - already migrated`);
+        continue;
+      }
+
+      const localFile = path.join(__dirname, '../../uploads/categories', imagePath);
+
+      if (!fs.existsSync(localFile)) {
+        console.log(`⚠️  Category #${id} (${name}) - file not found: ${localFile}`);
+        continue;
+      }
+
+      try {
+        const uploadResult = await cloudinary.uploader.upload(localFile, {
+          folder: 'emart/categories',
+          public_id: path.parse(imagePath).name,
+          resource_type: 'image'
+        });
+
+        try {
+          await client.query(
+            'UPDATE categories SET "imagePath" = $1 WHERE id = $2',
+            [uploadResult.secure_url, id]
+          );
+        } catch (error) {
+          await client.query(
+            'UPDATE categories SET imagepath = $1 WHERE id = $2',
+            [uploadResult.secure_url, id]
+          );
+        }
+
+        console.log(`✅ Category #${id} (${name})`);
+        console.log(`   Cloudinary: ${uploadResult.secure_url}\n`);
+
+      } catch (error) {
+        console.error(`❌ Failed to migrate category #${id} (${name}):`, error.message, '\n');
+      }
+    }
+
+    console.log('✨ Categories migration complete!');
+
+  } catch (error) {
+    console.error('❌ Migration failed:', error.message);
+  } finally {
+    await client.end();
+  }
+}
+
 // Run all migrations
 async function migrateAll() {
   await migrateBanners();
   await migrateProducts();
   await migrateArrivals();
   await migratePromotions();
+  await migrateCategories();
   console.log('\n🎉 All migrations complete!');
   process.exit(0);
 }

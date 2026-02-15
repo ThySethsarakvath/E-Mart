@@ -15,6 +15,8 @@ import {
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
+import { Roles } from 'src/auth/decorator/roles.decorator';
+import { RolesGuard } from 'src/auth/guard/roles.guard';
 
 @Controller('orders')
 export class OrdersController {
@@ -27,6 +29,13 @@ export class OrdersController {
     console.log('User from Token:', req.user);
     const userId = req.user.id; // Or req.user.sub depending on your strategy
     return this.ordersService.findByUserId(userId);
+  }
+
+  @Get('stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async getDashboardStats() {
+    return await this.ordersService.getDashboardStats();
   }
 
   /**
