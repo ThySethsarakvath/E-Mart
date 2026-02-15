@@ -1,24 +1,13 @@
 <template>
-  <div
-    :class="[
-      'arrival-card',
-      layoutClass
-    ]"
-    :style="cardStyle"
-  >
-    <img
-      :src="imageUrl"
-      :alt="arrival.title"
-      class="product-image"
-    />
+  <div :class="[
+    'arrival-card',
+    layoutClass
+  ]" :style="cardStyle">
+    <img :src="imageUrl" :alt="arrival.title" class="product-image" />
     <div class="content">
       <h3 class="title">{{ arrival.title }}</h3>
       <p class="subtitle">{{ arrival.subtitle }}</p>
-      <a
-        v-if="arrival.link"
-        :href="arrival.link"
-        class="shop-now-btn"
-      >
+      <a v-if="arrival.link" :href="arrival.link" class="shop-now-btn">
         Shop Now
       </a>
     </div>
@@ -54,7 +43,7 @@ export default {
       return positions[this.index] || {};
     },
     imageUrl() {
-      return `https://e-mart-order-worker.onrender.com/uploads/arrivals/${this.arrival.imagePath}`;
+      return this.arrival.imagePath || 'https://via.placeholder.com/500x500?text=No+Image';
     }
   }
 };
@@ -83,7 +72,8 @@ export default {
 }
 
 .layout-large .product-image {
-  height: 360px; /* INCREASED from 220px */
+  height: 360px;
+  /* INCREASED from 220px */
   width: auto;
   object-fit: contain;
   margin: 0 auto 30px;

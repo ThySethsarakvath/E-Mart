@@ -24,11 +24,7 @@
     <div v-else class="arrivals-grid">
       <div v-for="arrival in arrivals" :key="arrival.id" class="arrival-card">
         <div class="arrival-image">
-          <img
-            :src="getArrivalImageUrl(arrival.imagePath)"
-            :alt="arrival.title"
-            @error="handleImageError"
-          />
+          <img :src="getArrivalImageUrl(arrival.imagePath)" :alt="arrival.title" @error="handleImageError" />
           <div class="new-badge">NEW</div>
         </div>
         <div class="arrival-info">
@@ -86,15 +82,8 @@
                 <span>Click to upload product image</span>
                 <span class="upload-hint">Recommended size: 500x500px (Max 5MB)</span>
               </label>
-              <input
-                id="arrival-image-input"
-                type="file"
-                accept="image/*"
-                @change="handleFileChange"
-                style="display: none"
-                ref="fileInput"
-                :required="!isEditMode"
-              />
+              <input id="arrival-image-input" type="file" accept="image/*" @change="handleFileChange"
+                style="display: none" ref="fileInput" :required="!isEditMode" />
             </div>
             <p v-if="isEditMode" class="hint-text">Leave empty to keep current image</p>
           </div>
@@ -102,40 +91,23 @@
           <!-- Title -->
           <div class="form-group">
             <label>Product Title <span class="required">*</span></label>
-            <input
-              type="text"
-              v-model="formData.title"
-              placeholder="Enter product title"
-              required
-              minlength="3"
-              class="form-input"
-            />
+            <input type="text" v-model="formData.title" placeholder="Enter product title" required minlength="3"
+              class="form-input" />
             <p class="hint-text">Minimum 3 characters</p>
           </div>
 
           <!-- Subtitle/Description -->
           <div class="form-group">
             <label>Description <span class="required">*</span></label>
-            <textarea
-              v-model="formData.subtitle"
-              placeholder="Enter product description"
-              rows="4"
-              required
-              minlength="10"
-              class="form-input"
-            ></textarea>
+            <textarea v-model="formData.subtitle" placeholder="Enter product description" rows="4" required
+              minlength="10" class="form-input"></textarea>
             <p class="hint-text">Minimum 10 characters</p>
           </div>
 
           <!-- Link (Optional) -->
           <div class="form-group">
             <label>Product Link</label>
-            <input
-              type="url"
-              v-model="formData.link"
-              placeholder="https://example.com/product"
-              class="form-input"
-            />
+            <input type="url" v-model="formData.link" placeholder="https://example.com/product" class="form-input" />
             <p class="hint-text">Optional: Link for "Shop Now" or product details</p>
           </div>
 
@@ -224,7 +196,7 @@ export default {
     },
 
     getArrivalImageUrl(imagePath) {
-      return arrivalsService.getArrivalImageUrl(imagePath);
+      return imagePath || 'https://via.placeholder.com/500x500?text=Image+Not+Found';
     },
 
     handleImageError(event) {
@@ -248,7 +220,7 @@ export default {
         subtitle: arrival.subtitle || '',
         link: arrival.link || '',
       };
-      this.imagePreview = this.getArrivalImageUrl(arrival.imagePath);
+      this.imagePreview = arrival.imagePath;
       this.selectedFile = null;
       this.errorMessage = '';
       this.showModal = true;
@@ -461,8 +433,13 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* --- ARRIVALS GRID --- */
