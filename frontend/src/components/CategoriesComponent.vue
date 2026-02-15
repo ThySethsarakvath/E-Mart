@@ -30,18 +30,14 @@ export default {
   },
   computed: {
     imageUrl() {
-      return `https://e-mart-order-worker.onrender.com/uploads/categories/${this.category.imagePath}`;
+      return this.category.imagePath || 'https://via.placeholder.com/300x300?text=Category';
     }
   }
 }
 </script>
 
 <template>
-  <div
-    class="category-card"
-    :class="{ 'active-card': isActive }"
-    @click="navigateToCategory"
-  >
+  <div class="category-card" :class="{ 'active-card': isActive }" @click="navigateToCategory">
     <div class="icon-container">
       <img :src="imageUrl" :alt="category.name" />
     </div>
@@ -75,7 +71,8 @@ export default {
   border-color: #0d6efd !important;
   background-color: #f0f7ff;
   transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25); /* Stronger Glow */
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+  /* Stronger Glow */
 }
 
 
@@ -115,10 +112,12 @@ export default {
     padding: 20px 12px;
     min-height: 120px;
   }
+
   .icon-container {
     width: 56px;
     height: 56px;
   }
+
   .category-name {
     font-size: 13px;
   }
@@ -129,11 +128,13 @@ export default {
     padding: 16px 8px;
     min-height: 100px;
   }
+
   .icon-container {
     width: 48px;
     height: 48px;
     margin-bottom: 8px;
   }
+
   .category-name {
     font-size: 12px;
   }

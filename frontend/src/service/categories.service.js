@@ -1,8 +1,6 @@
 import apiClient from './api';
 import axios from 'axios';
 
-const DIRECT_ORDER_WORKER_URL = 'https://e-mart-order-worker.onrender.com';
-
 export default {
   // Categories
   async getAllCategories() {
@@ -63,7 +61,9 @@ export default {
   },
 
   getCategoryImageUrl(imagePath) {
-    return `${DIRECT_ORDER_WORKER_URL}/uploads/categories/${imagePath}`;
+  if (!imagePath) return 'https://via.placeholder.com/300x300?text=Category';
+  if (imagePath.startsWith('http')) return imagePath;
+  return imagePath;
   },
 
   // Subcategories

@@ -414,7 +414,7 @@ export default {
       this.categoryFormData = {
         name: category.name || '',
       };
-      this.imagePreview = this.getCategoryImageUrl(category.imagePath);
+      this.imagePreview = category.imagePath;
       this.selectedFile = null;
       this.errorMessage = '';
       this.showCategoryModal = true;
