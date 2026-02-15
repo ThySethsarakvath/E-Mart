@@ -250,7 +250,7 @@ onMounted(async () => {
 <style scoped>
 .dashboard {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  background: linear-gradient(135deg, #e7e7e7 0%, #e8ecf1 100%);
   padding: 2rem;
 }
 
