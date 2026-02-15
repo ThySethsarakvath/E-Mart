@@ -2,9 +2,6 @@ import apiClient from './api';
 
 export default {
 
-  // ======================
-  // GET ALL PROMOTIONS
-  // ======================
   async getAllPromotions() {
     try {
       const response = await apiClient.get('/promotions');
@@ -14,9 +11,6 @@ export default {
     }
   },
 
-  // ======================
-  // CREATE PROMOTION
-  // ======================
   async createPromotion(formData) {
     try {
       const response = await apiClient.post('/promotions', formData, {
@@ -30,9 +24,6 @@ export default {
     }
   },
 
-  // ======================
-  // UPDATE PROMOTION
-  // ======================
   async updatePromotion(id, formData) {
     try {
       const response = await apiClient.patch(`/promotions/${id}`, formData, {
@@ -46,9 +37,6 @@ export default {
     }
   },
 
-  // ======================
-  // DELETE PROMOTION
-  // ======================
   async deletePromotion(id) {
     try {
       const response = await apiClient.delete(`/promotions/${id}`);
@@ -58,10 +46,11 @@ export default {
     }
   },
 
-  // ======================
-  // IMAGE URL HELPER
-  // ======================
   getPromotionImageUrl(imagePath) {
-    return `https://e-mart-order-worker.onrender.com/uploads/promotions/${imagePath}`;
+    if (!imagePath) return 'https://via.placeholder.com/400x400?text=No+Image';
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    return imagePath;
   },
 };

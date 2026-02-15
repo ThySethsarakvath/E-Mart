@@ -9,7 +9,7 @@ export default {
   },
   computed: {
     imageUrl() {
-      return `https://e-mart-order-worker.onrender.com/uploads/promotions/${this.promotion.imagePath}`;
+      return this.promotion.imagePath || 'https://via.placeholder.com/400x400?text=No+Image';
     },
     discountLabel() {
       return `-${this.promotion.discountPercent}%`;

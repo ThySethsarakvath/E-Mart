@@ -294,7 +294,7 @@ export default {
     },
 
     getImageUrl(path) {
-      return promotionService.getPromotionImageUrl(path);
+      return path || 'https://via.placeholder.com/200x200?text=Product+Image';
     },
 
     handleImageError(event) {
@@ -326,7 +326,7 @@ export default {
         rating: promo.rating,
         reviewCount: promo.reviewCount,
       };
-      this.preview = this.getImageUrl(promo.imagePath);
+      this.preview = promo.imagePath;
       this.imageFile = null;
       this.errorMessage = '';
       this.showModal = true;
