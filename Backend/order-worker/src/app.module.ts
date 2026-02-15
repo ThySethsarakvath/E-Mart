@@ -14,6 +14,7 @@ import { ArrivalsModule } from './arrivals/arrivals.module';
 import { ProductsModule } from './products/products.module';
 import { PaymentsModule } from './payments/payments.module';
 import { OrdersModule } from './orders/orders.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { OrdersModule } from './orders/orders.module';
     ProductsModule,
     PaymentsModule,
     OrdersModule,
+    CloudinaryModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

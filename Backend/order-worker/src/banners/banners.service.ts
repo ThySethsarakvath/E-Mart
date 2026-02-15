@@ -1,20 +1,21 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+// Backend/order-worker/src/banners/banners.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Banner } from './entity/banner.entity';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { UpdateBannerDto } from './dto/update-banner.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class BannersService {
   constructor(
     @InjectRepository(Banner)
     private readonly bannerRepo: Repository<Banner>,
+    private readonly cloudinaryService: CloudinaryService, // ✅ Inject Cloudinary
   ) {}
 
   findAll() {
@@ -22,10 +23,20 @@ export class BannersService {
   }
 
   async create(dto: CreateBannerDto, file: Express.Multer.File) {
+    if (!file) {
+      throw new Error('Image file is required');
+    }
+
+    // ✅ Upload to Cloudinary
+    const uploadResult = await this.cloudinaryService.uploadImage(
+      file,
+      'banners',
+    );
+
     const banner = this.bannerRepo.create({
       title: dto.title,
       subtitle: dto.subtitle,
-      imagePath: file.filename,
+      imagePath: uploadResult.secure_url, // ✅ Store full Cloudinary URL
     });
 
     return {
@@ -41,7 +52,7 @@ export class BannersService {
       throw new NotFoundException(`Banner with ID ${id} not found`);
     }
 
-    // Update text fields from the DTO
+    // Update text fields
     if (dto.title) {
       banner.title = dto.title;
     }
@@ -49,14 +60,22 @@ export class BannersService {
       banner.subtitle = dto.subtitle;
     }
 
-    // Update image if a new one was uploaded
+    // Update image if new one uploaded
     if (file) {
-      try {
-        await unlink(join('./uploads/banners', banner.imagePath));
-      } catch (error) {
-        // Logic remains the same: ignore if file is missing
+      // ✅ Delete old image from Cloudinary
+      const oldPublicId = this.cloudinaryService.extractPublicId(
+        banner.imagePath,
+      );
+      if (oldPublicId) {
+        await this.cloudinaryService.deleteImage(oldPublicId);
       }
-      banner.imagePath = file.filename;
+
+      // ✅ Upload new image
+      const uploadResult = await this.cloudinaryService.uploadImage(
+        file,
+        'banners',
+      );
+      banner.imagePath = uploadResult.secure_url;
     }
 
     return {
@@ -71,12 +90,13 @@ export class BannersService {
     if (!banner) {
       throw new NotFoundException(`Banner with ID ${id} not found`);
     }
-    // Delete image file
-    try {
-      await unlink(join('./uploads/banners', banner.imagePath));
-    } catch (error) {
-      // Ignore error if file doesn't exist
+
+    // ✅ Delete image from Cloudinary
+    const publicId = this.cloudinaryService.extractPublicId(banner.imagePath);
+    if (publicId) {
+      await this.cloudinaryService.deleteImage(publicId);
     }
+
     await this.bannerRepo.remove(banner);
     return {
       message: 'Banner deleted successfully',

@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
+// Backend/order-worker/src/banners/banners.controller.ts
 import {
   Body,
   Controller,
@@ -16,8 +17,6 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { BannersService } from './banners.service';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { UpdateBannerDto } from './dto/update-banner.dto';
@@ -32,17 +31,7 @@ export class BannersController {
   }
 
   @Post()
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads/banners',
-        filename: (req, file, callback) => {
-          const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, `${uniqueName}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image')) // ✅ Simplified - no disk storage
   create(
     @Body() body: CreateBannerDto,
     @UploadedFile() file: Express.Multer.File,
@@ -51,17 +40,7 @@ export class BannersController {
   }
 
   @Patch(':id')
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads/banners',
-        filename: (req, file, callback) => {
-          const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(null, `${uniqueName}${extname(file.originalname)}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image')) // ✅ Simplified - no disk storage
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateBannerDto,
