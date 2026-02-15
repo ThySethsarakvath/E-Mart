@@ -1,7 +1,7 @@
 import apiClient from './api'
 import axios from 'axios'
 
-const DIRECT_ORDER_WORKER_URL = import.meta.env.ORDER_WORKER_URL;
+const DIRECT_ORDER_WORKER_URL = import.meta.env.VITE_ORDER_WORKER_URL;
 export default {
   async getAllArrivals() {
     try {

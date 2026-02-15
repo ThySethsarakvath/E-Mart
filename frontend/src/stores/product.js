@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 const workerClient = axios.create({
-  baseURL: import.meta.env.WORKER_API_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 export const useProductStore = defineStore('product', {
   state: () => ({
