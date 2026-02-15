@@ -7,7 +7,6 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  // 🚨 Disable Nest global body parsing (IMPORTANT)
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
   });
@@ -24,14 +23,18 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ['https://e-mart-frontend-38lv.onrender.com'],
+    origin: [
+      'https://e-mart-frontend-38lv.onrender.com',
+      'http://localhost:5173',
+    ],
     credentials: true,
   });
 
-  const server = await app.listen(3000);
+  const port = process.env.PORT || 3000;
+  const server = await app.listen(port);
   server.setTimeout(60000);
 
-  console.log(`API Gateway running at ${await app.getUrl()}`);
+  console.log(`API Gateway running on port ${port}`);
 }
 
 bootstrap();

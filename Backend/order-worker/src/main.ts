@@ -8,6 +8,7 @@ import { mkdirSync } from 'fs';
 import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
 
 async function bootstrap() {
+  // Create upload directories (won't be used on Render since we use Cloudinary)
   try {
     mkdirSync('./uploads/banners', { recursive: true });
     mkdirSync('./uploads/promotions', { recursive: true });
@@ -15,13 +16,16 @@ async function bootstrap() {
     mkdirSync('./uploads/arrivals', { recursive: true });
     mkdirSync('./uploads/products', { recursive: true });
   } catch (error) {
-    // Directory already exists
+    /* empty */
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableCors({
-    origin: ['https://e-mart-frontend-38lv.onrender.com'],
+    origin: [
+      'https://e-mart-frontend-38lv.onrender.com',
+      'http://localhost:5173',
+    ], // ✅ Add local dev
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     credentials: true,
   });
@@ -32,6 +36,9 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
+  console.log(`Order Worker is running on port ${port}`);
 }
+
 bootstrap();

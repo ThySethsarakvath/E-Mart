@@ -36,7 +36,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const dbUrl = config.get<string>('DATABASE_EMART_URL');
-        console.log('DATABASE_EMART_URL:', dbUrl); // <-- debug log
+        console.log('DATABASE_EMART_URL:', dbUrl);
 
         return {
           type: 'postgres',
