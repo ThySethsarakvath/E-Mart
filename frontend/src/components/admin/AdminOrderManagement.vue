@@ -158,7 +158,7 @@ const openEditStatus = async (order) => {
     try {
       await orderService.updateOrderStatus(order.id, newStatus.toUpperCase());
       await fetchOrders();
-    } catch (e) { alert("Update failed"); }
+    } catch { alert("Update failed"); }
   }
 };
 

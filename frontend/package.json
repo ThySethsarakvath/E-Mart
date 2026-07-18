@@ -10,14 +10,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start:prod": "serve -s dist -l 3000",
+    "start:prod": "serve -s dist -l 4080",
     "test:unit": "vitest",
     "lint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
-    "axios": "^1.13.2",
+    "axios": "^1.18.1",
     "pinia": "^3.0.4",
     "qrcode": "^1.5.4",
     "serve": "^14.2.5",

@@ -12,8 +12,8 @@
           <div class="avatar-large">{{ profile.firstName?.charAt(0) }}</div>
           <h2>User Profile</h2>
           <div class="role-container">
-             <span v-for="ur in profile.userRoles" :key="ur.id" class="role-badge">
-                {{ ur.role?.name }}
+             <span v-for="role in profile.roles || []" :key="role" class="role-badge">
+                {{ role }}
              </span>
           </div>
         </div>

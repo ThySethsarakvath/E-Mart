@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.DEV ? 'http://localhost:4001/api' : '/api');
+let refreshPromise = null;
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -30,15 +33,26 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     // If 401 and we haven't retried yet, try to refresh token
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthRequest =
+      originalRequest?.url?.includes('/auth/login') ||
+      originalRequest?.url?.includes('/auth/register') ||
+      originalRequest?.url?.includes('/auth/refresh');
+
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !isAuthRequest
+    ) {
       originalRequest._retry = true;
 
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         try {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-            refreshToken,
-          });
+          refreshPromise ||= axios.post(`${API_BASE_URL}/auth/refresh`, {
+              refreshToken,
+            });
+          const response = await refreshPromise;
 
           const { accessToken, refreshToken: newRefreshToken } = response.data;
           localStorage.setItem('accessToken', accessToken);
@@ -53,6 +67,8 @@ apiClient.interceptors.response.use(
           localStorage.removeItem('user');
           window.location.href = '/login';
           return Promise.reject(refreshError);
+        } finally {
+          refreshPromise = null;
         }
       }
     }

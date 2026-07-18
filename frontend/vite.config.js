@@ -14,7 +14,7 @@ export default defineConfig({
     },
   },
   preview: {
-    port: 3000,
+    port: 4080,
     host: true,
     allowedHosts: [
       'e-mart-frontend-38lv.onrender.com'

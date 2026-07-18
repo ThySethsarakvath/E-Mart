@@ -1,5 +1,4 @@
 import apiClient from './api';
-import axios from 'axios';
 
 export default {
   // Categories

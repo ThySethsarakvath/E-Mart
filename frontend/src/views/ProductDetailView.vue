@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import cartService from '@/service/cart';
 import wishlistService from '@/service/wishlist';
-import axios from 'axios';
+import productService from '@/service/product.service';
 
 const route = useRoute();
 const router = useRouter();
@@ -12,12 +12,16 @@ const product = ref(null);
 const relatedProducts = ref([]);
 const quantity = ref(1);
 
-const loadProductData = () => {
-  const savedProduct = localStorage.getItem('currentProduct');
-  if (savedProduct) {
-    product.value = JSON.parse(savedProduct);
-    fetchRelatedProducts();
+const loadProductData = async () => {
+  try {
+    product.value = await productService.getProduct(route.params.id);
+    localStorage.setItem('currentProduct', JSON.stringify(product.value));
+    await fetchRelatedProducts();
     window.scrollTo(0, 0);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    const savedProduct = localStorage.getItem('currentProduct');
+    if (savedProduct) product.value = JSON.parse(savedProduct);
   }
 };
 
@@ -27,10 +31,10 @@ const fetchRelatedProducts = async () => {
     if (!subCatId) return;
 
 
-    const response = await axios.get(`http://localhost:4000/products?subCategoryId=${subCatId}`);
+    const products = await productService.getProductsBySubCategory(subCatId);
 
-    if (response.data && Array.isArray(response.data)) {
-      relatedProducts.value = response.data
+    if (Array.isArray(products)) {
+      relatedProducts.value = products
         .filter(p => p.id !== product.value.id)
         .slice(0, 4);
     }

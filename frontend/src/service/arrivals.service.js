@@ -1,7 +1,5 @@
 import apiClient from './api'
-import axios from 'axios'
 
-const DIRECT_ORDER_WORKER_URL = import.meta.env.VITE_ORDER_WORKER_URL;
 export default {
   async getAllArrivals() {
     try {
@@ -14,11 +12,9 @@ export default {
 
   async createArrival(formData) {
     try {
-      const token = localStorage.getItem('accessToken')
-      const response = await axios.post(`${DIRECT_ORDER_WORKER_URL}/arrivals`, formData, {
+      const response = await apiClient.post('/arrivals', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: token ? `Bearer ${token}` : '',
         },
       })
       return response.data
@@ -29,11 +25,9 @@ export default {
 
   async updateArrival(id, formData) {
     try {
-      const token = localStorage.getItem('accessToken')
-      const response = await axios.patch(`${DIRECT_ORDER_WORKER_URL}/arrivals/${id}`, formData, {
+      const response = await apiClient.patch(`/arrivals/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: token ? `Bearer ${token}` : '',
         },
       })
       return response.data

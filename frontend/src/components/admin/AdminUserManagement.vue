@@ -89,7 +89,7 @@ const toggleStatus = async (user) => {
   try {
     await userService.toggleUserStatus(user.id);
     await fetchUsers(); // Refresh
-  } catch (error) {
+  } catch {
     alert("Error changing status");
   }
 };
@@ -99,7 +99,7 @@ const confirmDelete = async (user) => {
     try {
       await userService.deleteUser(user.id);
       await fetchUsers();
-    } catch (error) {
+    } catch {
       alert("Error deleting user");
     }
   }

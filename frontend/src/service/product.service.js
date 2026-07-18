@@ -10,6 +10,21 @@ export default {
     }
   },
 
+  async getProduct(id) {
+    const response = await apiClient.get(`/products/${id}`)
+    return response.data
+  },
+
+  async getProductsByCategory(categoryId) {
+    const response = await apiClient.get(`/products/category/${categoryId}`)
+    return response.data
+  },
+
+  async getProductsBySubCategory(subCategoryId) {
+    const response = await apiClient.get(`/products/subcategory/${subCategoryId}`)
+    return response.data
+  },
+
   async createProduct(formData) {
     try {
       const response = await apiClient.post('/products', formData)

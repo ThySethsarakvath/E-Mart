@@ -193,7 +193,7 @@
       </div>
 
       <!-- Sandbox Simulation Button -->
-      <div class="sandbox-simulation" v-if="paymentStatus === 'PENDING'">
+      <div class="sandbox-simulation" v-if="paymentStatus === 'PENDING' && showSimulation">
         <div class="sandbox-notice">
           <p>🔧 <strong>Sandbox Mode:</strong> QR codes cannot be scanned with ABA Mobile in sandbox.</p>
           <p class="sandbox-hint">Use the button below to simulate a successful payment for testing.</p>
@@ -216,13 +216,12 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import QRCode from 'qrcode';
 import { createPaymentQR, checkPaymentStatus as checkStatus, simulatePayment } from '../service/payment.service';
 import cartService from '@/service/cart';
 
 const router = useRouter();
-const route = useRoute();
 
 // State
 const loading = ref(true);
@@ -232,6 +231,7 @@ const qrCanvas = ref(null);
 const paymentStatus = ref('PENDING');
 const checkingPayment = ref(false);
 const simulatingPayment = ref(false);
+const showSimulation = import.meta.env.DEV;
 
 // Order data - these would typically come from the cart/checkout
 const orderId = ref(null);
@@ -279,22 +279,18 @@ const generateQR = async () => {
     // Get order data from route params or localStorage
     const cartData = JSON.parse(localStorage.getItem('checkout_data') || '{}');
 
-    if (!cartData.orderId || !cartData.totalAmount) {
+    if (!Array.isArray(cartData.items) || cartData.items.length === 0) {
       throw new Error('Invalid checkout data. Please go back to cart.');
     }
 
-    orderId.value = cartData.orderId;
     amount.value = cartData.totalAmount;
     orderItems.value = cartData.items || [];
 
     // Create payment QR
     const response = await createPaymentQR({
-      orderId: orderId.value,
-      amount: amount.value,
       items: orderItems.value.map(item => ({
-        name: item.name,
+        productId: item.id,
         quantity: item.quantity,
-        price: item.price,
       })),
       customerInfo: {
         firstName: cartData.customerInfo?.firstName || 'Customer',
@@ -306,6 +302,8 @@ const generateQR = async () => {
 
     if (response.data.success) {
       qrData.value = response.data;
+      orderId.value = response.data.orderId;
+      amount.value = Number(response.data.amount);
       transactionId.value = response.data.transactionId;
 
       // If no qrImage, generate from qrString
@@ -344,9 +342,9 @@ const checkPaymentStatus = async (isManual = false) => {
     const response = await checkStatus(transactionId.value);
 
     if (response.data.success) {
-      const status = String(response.data.status);
+      const status = response.data.status;
 
-      if (status === '00' || status === '0') {
+      if (status === 'SUCCESS') {
         paymentStatus.value = 'SUCCESS';
         stopStatusChecking();
         clearInterval(timerInterval);
@@ -355,7 +353,7 @@ const checkPaymentStatus = async (isManual = false) => {
       }
       // If status is 11, 2, or anything else that isn't a "hard" failure, DO NOTHING.
       // This keeps the QR code visible.
-      else if (status === '1' || status === '5') { // Specific ABA error codes
+      else if (status === 'FAILED') {
         paymentStatus.value = 'FAILED';
         error.value = 'Payment session expired or invalid.';
         stopStatusChecking();

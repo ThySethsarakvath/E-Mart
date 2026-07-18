@@ -2,7 +2,7 @@
 import { useRoute } from 'vue-router';
 import { useProductStore } from '../stores/product';
 import { computed, ref, onMounted } from 'vue';
-import axios from 'axios';
+import productService from '@/service/product.service';
 
 export default {
   name: 'CategoryProductsView',
@@ -38,8 +38,7 @@ export default {
 
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`https://e-mart-order-worker.onrender.com/products/category/${categoryId}`);
-        products.value = response.data;
+        products.value = await productService.getProductsByCategory(categoryId);
       } catch (error) {
         console.error("Error fetching products:", error);
       }

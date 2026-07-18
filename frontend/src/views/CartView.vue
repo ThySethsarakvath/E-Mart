@@ -50,7 +50,6 @@ const proceedToPayment = () => {
 
   // Prepare checkout data for the payment page
   const checkoutData = {
-    orderId: Date.now(),
     totalAmount: grandTotal.value,
     items: cartItems.value,
     customerInfo: customerInfo.value,
