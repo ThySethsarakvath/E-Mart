@@ -1,8 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Injectable,
   UnauthorizedException,
@@ -14,6 +10,7 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { User } from '../entities/user.entity';
 import { RefreshToken } from '../entities/refresh-token.entity';
 import { Role } from '../entities/role.entity';
@@ -79,15 +76,15 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.userRepository.findOne({
-      where: { email: loginDto.email },
-      relations: [
-        'userRoles',
-        'userRoles.role',
-        'userRoles.role.rolePermissions',
-        'userRoles.role.rolePermissions.permission',
-      ],
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .leftJoinAndSelect('user.userRoles', 'userRole')
+      .leftJoinAndSelect('userRole.role', 'role')
+      .leftJoinAndSelect('role.rolePermissions', 'rolePermission')
+      .leftJoinAndSelect('rolePermission.permission', 'permission')
+      .where('user.email = :email', { email: loginDto.email })
+      .getOne();
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -132,8 +129,13 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is required');
+    }
+
+    const tokenHash = this.hashToken(refreshToken);
     const tokenRecord = await this.refreshTokenRepository.findOne({
-      where: { token: refreshToken },
+      where: [{ token: tokenHash }, { token: refreshToken }],
       relations: [
         'user',
         'user.userRoles',
@@ -178,8 +180,13 @@ export class AuthService {
   }
 
   async logout(refreshToken: string) {
+    if (!refreshToken) {
+      return { message: 'Logged out successfully' };
+    }
+
+    const tokenHash = this.hashToken(refreshToken);
     const tokenRecord = await this.refreshTokenRepository.findOne({
-      where: { token: refreshToken },
+      where: [{ token: tokenHash }, { token: refreshToken }],
     });
 
     if (tokenRecord) {
@@ -258,12 +265,11 @@ export class AuthService {
       expiresIn: this.configService.get('JWT_REFRESH_EXPIRES'),
     });
 
-    // Store refresh token
-    const expiresAt = new Date();
-    const expiresInDays = parseInt(
-      this.configService.get('JWT_REFRESH_EXPIRES').replace('d', ''),
-    );
-    expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+    const decoded = this.jwtService.decode<{ exp?: number }>(refreshToken);
+    if (!decoded?.exp) {
+      throw new Error('Generated refresh token has no expiration');
+    }
+    const expiresAt = new Date(decoded.exp * 1000);
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
@@ -272,7 +278,7 @@ export class AuthService {
     }
 
     const refreshTokenEntity = this.refreshTokenRepository.create({
-      token: refreshToken,
+      token: this.hashToken(refreshToken),
       user,
       expiresAt,
     });
@@ -283,6 +289,10 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  private hashToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
   }
   async remove(id: string) {
     const user = await this.userRepository.findOne({ where: { id } });

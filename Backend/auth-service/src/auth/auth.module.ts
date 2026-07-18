@@ -13,8 +13,8 @@ import { Role } from '../entities/role.entity';
 import { Permission } from '../entities/permission.entity';
 import { UserRole } from '../entities/user-role.entity';
 import { RolePermission } from '../entities/role-permission.entity';
-import { UsersController } from 'src/users/user.controller';
-import { UsersService } from 'src/users/user.service';
+import { UsersController } from '../users/user.controller';
+import { UsersService } from '../users/user.service';
 
 @Module({
   imports: [

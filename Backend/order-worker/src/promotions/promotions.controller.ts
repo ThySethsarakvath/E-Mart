@@ -14,22 +14,29 @@ import {
   UploadedFile,
   UseInterceptors,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PromotionsService } from './promotions.service';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
+import { Public } from '../auth/decorator/public.decorator';
+import { Roles } from '../auth/decorator/roles.decorator';
+import { RolesGuard } from '../auth/guard/roles.guard';
 
 @Controller('promotions')
 export class PromotionsController {
   constructor(private readonly promotionsService: PromotionsService) {}
 
   @Get()
+  @Public()
   getAll() {
     return this.promotionsService.findAll();
   }
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   @UseInterceptors(FileInterceptor('image'))
   create(
     @Body() createPromotionDto: CreatePromotionDto,
@@ -39,6 +46,8 @@ export class PromotionsController {
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   @UseInterceptors(FileInterceptor('image'))
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -49,6 +58,8 @@ export class PromotionsController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.promotionsService.remove(id);
   }

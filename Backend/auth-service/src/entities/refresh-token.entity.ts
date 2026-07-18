@@ -13,7 +13,7 @@ export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'text', unique: true })
   token: string;
 
   @ManyToOne(() => User, (user) => user.refreshTokens, { onDelete: 'CASCADE' })

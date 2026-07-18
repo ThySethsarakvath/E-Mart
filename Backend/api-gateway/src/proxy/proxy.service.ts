@@ -1,15 +1,19 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/only-throw-error */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { AxiosRequestConfig } from 'axios';
 import type { Request } from 'express';
+
+export interface ProxyResponse {
+  status: number;
+  data: unknown;
+  headers: Record<string, unknown>;
+}
 
 @Injectable()
 export class ProxyService {
@@ -38,7 +42,7 @@ export class ProxyService {
     body?: any,
     query?: any,
     rawRequest?: Request,
-  ) {
+  ): Promise<ProxyResponse> {
     const baseUrl =
       service === 'order-worker'
         ? this.ORDER_WORKER_URL
@@ -73,13 +77,17 @@ export class ProxyService {
 
     try {
       const response = await firstValueFrom(this.httpService.request(config));
-      return response.data;
+      return {
+        status: response.status,
+        data: response.data,
+        headers: response.headers as Record<string, unknown>,
+      };
     } catch (err: any) {
       console.error('PROXY ERROR FULL:', err.response?.data || err.message);
 
       throw {
         status: err.response?.status || 500,
-        message: err.response?.data || err.message,
+        message: err.response?.data?.message || err.message,
         error: err.response?.data,
       };
     }

@@ -19,6 +19,7 @@ import { RoleGuard } from './guards/role.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
 import { Roles } from './decorators/roles.decorator';
 import { RequirePermissions } from './decorators/permissions.decorator';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -38,14 +39,14 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Body('refreshToken') refreshToken: string) {
-    return this.authService.refresh(refreshToken);
+  async refresh(@Body() body: RefreshTokenDto) {
+    return this.authService.refresh(body.refreshToken);
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Body('refreshToken') refreshToken: string) {
-    return this.authService.logout(refreshToken);
+  async logout(@Body() body: RefreshTokenDto) {
+    return this.authService.logout(body.refreshToken);
   }
 
   @Get('me')

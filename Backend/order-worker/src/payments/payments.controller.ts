@@ -1,54 +1,85 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/require-await */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-import { Controller, Post, Get, Body, Param, HttpCode } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreateQrDto } from './dto/create-qr.dto';
+import { Public } from '../auth/decorator/public.decorator';
+import type { Request } from 'express';
+import { AuthenticatedUser } from '../auth/authenticated-user';
+
+type AuthenticatedRequest = Request & { user: AuthenticatedUser };
 
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post('create-qr')
-  async createQr(@Body() createQrDto: CreateQrDto) {
-    // We pass the whole DTO to the service now
-    return this.paymentsService.createQr(createQrDto);
+  async createQr(
+    @Body() createQrDto: CreateQrDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.paymentsService.createQr(createQrDto, req.user);
   }
 
+  @Public()
   @Post('callback')
   @HttpCode(200)
   async handleCallback(
     @Body()
     callbackData: {
       tran_id: string;
-      apv: number;
+      apv: number | string;
       status: string;
-      merchant_ref_no: string;
+      merchant_ref_no?: string;
     },
+    @Headers('x-payway-hmac-sha512') signature?: string,
   ) {
-    return this.paymentsService.handleCallback(callbackData);
+    return this.paymentsService.handleCallback(callbackData, signature);
   }
 
   @Post('check-status')
-  async checkStatus(@Body() body: { transactionId: string }) {
-    return this.paymentsService.checkTransactionStatus(body.transactionId);
+  async checkStatus(
+    @Body() body: { transactionId: string },
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.paymentsService.checkTransactionStatus(
+      body.transactionId,
+      req.user,
+    );
   }
 
   @Get('order/:orderId')
-  async getPaymentByOrderId(@Param('orderId') orderId: number) {
-    return this.paymentsService.getPaymentByOrderId(orderId);
+  async getPaymentByOrderId(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.paymentsService.getPaymentByOrderId(orderId, req.user);
   }
 
   @Get('transaction/:transactionId')
   async getPaymentByTransactionId(
     @Param('transactionId') transactionId: string,
+    @Req() req: AuthenticatedRequest,
   ) {
-    return this.paymentsService.getPaymentByTransactionId(transactionId);
+    return this.paymentsService.getPaymentByTransactionId(
+      transactionId,
+      req.user,
+    );
   }
 
   @Post('test/simulate-payment')
-  async simulatePayment(@Body() body: { transactionId: string }) {
-    return this.paymentsService.fakeCallback(body.transactionId);
+  async simulatePayment(
+    @Body() body: { transactionId: string },
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.paymentsService.simulatePayment(body.transactionId, req.user);
   }
 }

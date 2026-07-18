@@ -14,20 +14,27 @@ import {
   UploadedFile,
   UseInterceptors,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ArrivalsService } from './arrivals.service';
+import { Public } from '../auth/decorator/public.decorator';
+import { Roles } from '../auth/decorator/roles.decorator';
+import { RolesGuard } from '../auth/guard/roles.guard';
 
 @Controller('arrivals')
 export class ArrivalsController {
   constructor(private readonly arrivalsService: ArrivalsService) {}
 
   @Get()
+  @Public()
   getAll() {
     return this.arrivalsService.findAll();
   }
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   @UseInterceptors(FileInterceptor('image'))
   create(@Body() body: any, @UploadedFile() file: Express.Multer.File) {
     return this.arrivalsService.create({
@@ -39,6 +46,8 @@ export class ArrivalsController {
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   @UseInterceptors(FileInterceptor('image'))
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -54,6 +63,8 @@ export class ArrivalsController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.arrivalsService.remove(id);
   }

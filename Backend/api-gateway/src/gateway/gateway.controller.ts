@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { All, Controller, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ProxyService } from '../proxy/proxy.service';
-import { Public } from '../auth/decorator/public.decorator';
 import * as bodyParser from 'body-parser';
 
 const jsonParser = bodyParser.json();
@@ -15,7 +12,6 @@ const urlEncodedParser = bodyParser.urlencoded({ extended: true });
 export class GatewayController {
   constructor(private proxyService: ProxyService) {}
 
-  @Public()
   @All('*')
   async handleRequest(@Req() req: Request, @Res() res: Response) {
     try {
@@ -33,8 +29,7 @@ export class GatewayController {
         path.startsWith('/promotions') ||
         path.startsWith('/orders') ||
         path.startsWith('/categories') ||
-        path.startsWith('/payments') ||
-        path.startsWith('/orders')
+        path.startsWith('/payments')
       ) {
         service = 'order-worker';
       } else {
@@ -68,13 +63,24 @@ export class GatewayController {
         isMultipart ? req : undefined,
       );
 
-      return res.status(200).json(result);
-    } catch (error: any) {
+      return res.status(result.status).json(result.data);
+    } catch (error: unknown) {
       console.error('[Proxy] Error:', error);
+      const proxyError = error as {
+        status?: unknown;
+        message?: unknown;
+        error?: unknown;
+      };
+      const status =
+        typeof proxyError.status === 'number' ? proxyError.status : 500;
+      const message =
+        typeof proxyError.message === 'string'
+          ? proxyError.message
+          : 'Proxy error';
 
-      return res.status(error.status || 500).json({
-        message: error.message || 'Proxy error',
-        details: error.error,
+      return res.status(status).json({
+        message,
+        details: proxyError.error,
       });
     }
   }

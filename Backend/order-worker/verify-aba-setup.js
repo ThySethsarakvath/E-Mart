@@ -2,24 +2,30 @@
  * ABA Payway Setup Verification Script
  *
  * Usage:
- * 1. Copy your .env.configured to .env
- * 2. Run: node verify-aba-setup.js
+ * Run from Backend/order-worker with: npm run verify:payway
  */
 
 const crypto = require('crypto');
 const axios = require('axios');
-require('dotenv').config();
+require('dotenv').config({ path: '../.env' });
 
 // Configuration
-const MERCHANT_ID = process.env.PAYWAY_MERCHANT_ID || 'REMOVED_SECRET';
-const API_KEY = process.env.PAYWAY_API_KEY || 'REMOVED_SECRET';
-const SANDBOX_URL = process.env.PAYWAY_SANDBOX_URL || 'https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1';
+const MERCHANT_ID = process.env.PAYWAY_MERCHANT_ID;
+const API_KEY = process.env.PAYWAY_API_KEY;
+const PAYWAY_BASE_URL =
+  process.env.PAYWAY_BASE_URL || process.env.PAYWAY_SANDBOX_URL;
+
+if (!MERCHANT_ID || !API_KEY || !PAYWAY_BASE_URL) {
+  throw new Error(
+    'PAYWAY_MERCHANT_ID, PAYWAY_API_KEY, and PAYWAY_BASE_URL are required',
+  );
+}
 
 console.log('🔍 ABA Payway Setup Verification\n');
 console.log('Configuration:');
-console.log(`  Merchant ID: ${MERCHANT_ID}`);
-console.log(`  API Key: ${API_KEY.substring(0, 10)}...${API_KEY.substring(API_KEY.length - 10)}`);
-console.log(`  Sandbox URL: ${SANDBOX_URL}\n`);
+console.log('  Merchant ID: configured');
+console.log('  API Key: configured');
+console.log(`  Base URL: ${PAYWAY_BASE_URL}\n`);
 
 // Generate HMAC-SHA512 hash
 function generateHash(data) {
@@ -28,18 +34,14 @@ function generateHash(data) {
   return hmac.digest('base64');
 }
 
+function formatPayWayRequestTime(date = new Date()) {
+  return date.toISOString().replace(/\D/g, '').slice(0, 14);
+}
+
 // Generate unique transaction ID (≤ 20 chars)
-function generateTransactionId() {
-  const now = new Date();
-  const timestamp =
-    now.getFullYear().toString().slice(-2) +
-    (now.getMonth() + 1).toString().padStart(2, '0') +
-    now.getDate().toString().padStart(2, '0') +
-    now.getHours().toString().padStart(2, '0') +
-    now.getMinutes().toString().padStart(2, '0') +
-    now.getSeconds().toString().padStart(2, '0');
+function generateTransactionId(requestTime) {
   const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  return timestamp + random; // 16 chars
+  return requestTime.slice(2) + random; // 16 chars
 }
 
 // Base64 encode items
@@ -51,8 +53,8 @@ async function testQRGeneration() {
   try {
     console.log('📝 Generating test QR code...\n');
 
-    const tranId = generateTransactionId();
-    const reqTime = new Date().toISOString().replace(/[-:T.Z]/g, '').substring(0, 14);
+    const reqTime = formatPayWayRequestTime();
+    const tranId = generateTransactionId(reqTime);
 
     const amount = 1.00;
     const items = [{ name: 'Test Product', quantity: 1, price: 1.00 }];
@@ -82,9 +84,6 @@ async function testQRGeneration() {
 
     const hash = generateHash(hashString);
 
-    console.log('Raw hash string:', JSON.stringify(hashString));
-    console.log('Generated hash:', hash);
-
     const payload = {
       req_time: reqTime,
       merchant_id: MERCHANT_ID,
@@ -108,15 +107,28 @@ async function testQRGeneration() {
       hash: hash,
     };
 
-    console.log('Payload:', JSON.stringify(payload, null, 2));
     console.log('🚀 Calling ABA Payway API...\n');
 
-    const response = await axios.post(`${SANDBOX_URL}/payments/generate-qr`, payload, {
+    const response = await axios.post(`${PAYWAY_BASE_URL}/payments/generate-qr`, payload, {
       headers: { 'Content-Type': 'application/json' },
     });
 
     console.log('✅ SUCCESS! QR Code Generated\n');
-    console.log('Response:', JSON.stringify(response.data, null, 2));
+    console.log(
+      'Result:',
+      JSON.stringify(
+        {
+          status: response.data.status,
+          amount: response.data.amount,
+          currency: response.data.currency,
+          qrStringGenerated: Boolean(response.data.qrString),
+          qrImageGenerated: Boolean(response.data.qrImage),
+          deeplinkGenerated: Boolean(response.data.abapay_deeplink),
+        },
+        null,
+        2,
+      ),
+    );
   } catch (error) {
     console.error('\n❌ ERROR: Failed to generate QR code\n');
     if (error.response) {
@@ -124,6 +136,7 @@ async function testQRGeneration() {
     } else {
       console.error('Error:', error.message);
     }
+    process.exitCode = 1;
   }
 }
 

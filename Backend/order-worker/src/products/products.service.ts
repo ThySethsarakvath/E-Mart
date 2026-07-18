@@ -93,6 +93,14 @@ export class ProductsService {
     });
   }
 
+  findBySubCategory(subCategoryId: number) {
+    return this.productsRepository.find({
+      where: { subCategoryId },
+      relations: ['category', 'subCategory'],
+      order: { id: 'ASC' },
+    });
+  }
+
   async remove(id: number) {
     const product = await this.findOne(id);
     if (product.imagePath) {

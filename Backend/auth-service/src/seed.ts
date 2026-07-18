@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DataSource } from 'typeorm';
 import { Role } from './entities/role.entity';
 import { Permission } from './entities/permission.entity';
 import { RolePermission } from './entities/role-permission.entity';
+import { User } from './entities/user.entity';
+import { UserRole } from './entities/user-role.entity';
+import * as bcrypt from 'bcrypt';
 
 async function seed() {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -14,6 +15,8 @@ async function seed() {
   const roleRepo = dataSource.getRepository(Role);
   const permissionRepo = dataSource.getRepository(Permission);
   const rolePermissionRepo = dataSource.getRepository(RolePermission);
+  const userRepo = dataSource.getRepository(User);
+  const userRoleRepo = dataSource.getRepository(UserRole);
 
   // Create or find Roles
   let adminRole = await roleRepo.findOne({ where: { name: 'admin' } });
@@ -143,6 +146,33 @@ async function seed() {
         rolePermissionRepo.create({ role: userRole, permission }),
       );
       console.log(`Assigned ${permission.name} to user`);
+    }
+  }
+
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (adminEmail && adminPassword) {
+    let admin = await userRepo.findOne({ where: { email: adminEmail } });
+    if (!admin) {
+      admin = await userRepo.save(
+        userRepo.create({
+          email: adminEmail,
+          password: await bcrypt.hash(adminPassword, 12),
+          firstName: 'Local',
+          lastName: 'Admin',
+        }),
+      );
+      console.log('Created configured admin user');
+    }
+
+    const assignment = await userRoleRepo.findOne({
+      where: { user: { id: admin.id }, role: { id: adminRole.id } },
+    });
+    if (!assignment) {
+      await userRoleRepo.save(
+        userRoleRepo.create({ user: admin, role: adminRole }),
+      );
+      console.log('Assigned admin role to configured admin user');
     }
   }
 

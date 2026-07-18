@@ -15,12 +15,15 @@ import { ProductsModule } from './products/products.module';
 import { PaymentsModule } from './payments/payments.module';
 import { OrdersModule } from './orders/orders.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { AuthModule } from './auth/auth.module';
+import { validateEnvironment } from './config/environment';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '../.env',
+      validate: validateEnvironment,
     }),
 
     BannersModule,
@@ -31,19 +34,33 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     PaymentsModule,
     OrdersModule,
     CloudinaryModule,
+    AuthModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const dbUrl = config.get<string>('DATABASE_EMART_URL');
-        console.log('DATABASE_EMART_URL:', dbUrl);
+        const useSsl = config.get<string>('DB_SSL', 'false') === 'true';
+        const synchronize =
+          config.get<string>(
+            'DB_SYNCHRONIZE',
+            config.get('NODE_ENV') === 'production' ? 'false' : 'true',
+          ) === 'true';
 
         return {
-          type: 'postgres',
-          url: dbUrl,
-          ssl: { rejectUnauthorized: false },
+          type: 'postgres' as const,
+          ...(dbUrl
+            ? { url: dbUrl }
+            : {
+                host: config.get<string>('DB_HOST'),
+                port: config.get<number>('DB_PORT'),
+                username: config.get<string>('DB_USER'),
+                password: config.get<string>('DB_PASS'),
+                database: config.get<string>('DB_NAME'),
+              }),
+          ssl: useSsl ? { rejectUnauthorized: false } : false,
           autoLoadEntities: true,
-          synchronize: true,
+          synchronize,
         };
       },
     }),

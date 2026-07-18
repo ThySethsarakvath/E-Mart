@@ -1,54 +1,61 @@
-import { IsNumber, IsNotEmpty, IsOptional, IsString, IsArray, ValidateNested, IsEmail } from 'class-validator';
 import { Type } from 'class-transformer';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsEmail,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
-class ItemDto {
-  @IsString()
-  @IsNotEmpty()
-  name: string;
+class CheckoutItemDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  productId: number;
 
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   quantity: number;
-
-  @IsNumber()
-  price: number;
-  id: number;
 }
 
 class CustomerInfoDto {
-  @IsOptional()
   @IsString()
-  firstName?: string;
+  @IsNotEmpty()
+  firstName: string;
 
-  @IsOptional()
   @IsString()
-  lastName?: string;
+  @IsNotEmpty()
+  lastName: string;
 
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @IsOptional()
   @IsString()
-  phone?: string;
+  @IsNotEmpty()
+  phone: string;
 }
 
 export class CreateQrDto {
-  @IsNumber()
-  @IsNotEmpty()
-  orderId: number;
-
-  @IsNumber()
-  @IsNotEmpty()
-  amount: number;
-
+  // Retained only for compatibility with older clients. The server creates the
+  // authoritative order ID and returns it in the response.
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  orderId?: number;
+
   @IsArray()
+  @ArrayMinSize(1)
   @ValidateNested({ each: true })
-  @Type(() => ItemDto)
-  items?: ItemDto[];
+  @Type(() => CheckoutItemDto)
+  items: CheckoutItemDto[];
 
-  @IsOptional()
   @ValidateNested()
   @Type(() => CustomerInfoDto)
-  customerInfo?: CustomerInfoDto;
+  customerInfo: CustomerInfoDto;
 }

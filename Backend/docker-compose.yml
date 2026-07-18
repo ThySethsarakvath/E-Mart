@@ -1,33 +1,33 @@
-services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5673:5672"
-      - "15673:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+name: e-mart
 
+services:
   api-gateway:
     build:
       context: ./api-gateway
       dockerfile: Dockerfile.dev
     command: npm run start:dev
+    restart: unless-stopped
     ports:
       - "${API_GATEWAY_PORT}:3000"
     environment:
+      NODE_ENV: development
       PORT: 3000
-      RABBITMQ_URL: ${RABBITMQ_URL}
       CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING}
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      JWT_ACCESS_EXPIRES: ${JWT_ACCESS_EXPIRES}
-      JWT_REFRESH_EXPIRES: ${JWT_REFRESH_EXPIRES}
+      AUTH_SERVICE_URL: http://auth-service:3000
+      ORDER_WORKER_URL: http://order-worker:3000
     volumes:
       - ./api-gateway:/app
       - /app/node_modules
     depends_on:
-      - rabbitmq
+      auth-service:
+        condition: service_healthy
+      order-worker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     env_file:
       - .env
 
@@ -36,23 +36,31 @@ services:
       context: ./order-worker
       dockerfile: Dockerfile.dev
     command: npm run start:dev
+    restart: unless-stopped
     ports:
       - "${ORDER_WORKER_PORT}:3000"
     environment:
+      NODE_ENV: development
       PORT: 3000
-      RABBITMQ_URL: ${RABBITMQ_URL}
       CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING}
       DB_HOST: ${ORDER_DB_HOST}
       DB_PORT: ${ORDER_DB_PORT}
       DB_USER: ${ORDER_DB_USER}
       DB_PASS: ${ORDER_DB_PASS}
       DB_NAME: ${ORDER_DB_NAME}
+      DB_SSL: "false"
+      DB_SYNCHRONIZE: "true"
     volumes:
       - ./order-worker:/app
       - /app/node_modules
     depends_on:
-      - rabbitmq
-      - emart-db
+      emart-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     env_file:
       - .env
 
@@ -60,29 +68,38 @@ services:
     build:
       context: ./auth-service
       dockerfile: Dockerfile.dev
-    command: npm run start:dev
+    command: sh -c "npm run seed && npm run start:dev"
+    restart: unless-stopped
     ports:
       - "${AUTH_SERVICE_PORT}:3000"
     environment:
+      NODE_ENV: development
       PORT: 3000
-      RABBITMQ_URL: ${RABBITMQ_URL}
       CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING}
       DB_HOST: ${AUTH_DB_HOST}
       DB_PORT: ${AUTH_DB_PORT}
       DB_USER: ${AUTH_DB_USER}
       DB_PASS: ${AUTH_DB_PASS}
       DB_NAME: ${AUTH_DB_NAME}
+      DB_SSL: "false"
+      DB_SYNCHRONIZE: "true"
     volumes:
       - ./auth-service:/app
       - /app/node_modules
     depends_on:
-      - rabbitmq
-      - auth-db
+      auth-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     env_file:
       - .env
 
   emart-db:
-    image: postgres:16
+    image: postgres:17
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${EMART_DB_USER}
       POSTGRES_PASSWORD: ${EMART_DB_PASS}
@@ -91,9 +108,15 @@ services:
       - "${EMART_DB_PORT_HOST}:5432"
     volumes:
       - emart_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${EMART_DB_USER} -d ${EMART_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   auth-db:
-    image: postgres:16
+    image: postgres:17
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${AUTH_DB_USER}
       POSTGRES_PASSWORD: ${AUTH_DB_PASS}
@@ -102,14 +125,23 @@ services:
       - "${AUTH_DB_PORT_HOST}:5432"
     volumes:
       - auth_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DB_USER} -d ${AUTH_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   pgadmin:
     image: dpage/pgadmin4
+    profiles: ["tools"]
+    restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "${PGADMIN_PORT}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
     depends_on:
       - emart-db
       - auth-db
@@ -117,3 +149,4 @@ services:
 volumes:
   emart_pgdata:
   auth_pgdata:
+  pgadmin_data:

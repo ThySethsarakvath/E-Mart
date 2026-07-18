@@ -5,6 +5,7 @@ import { PaymentsController } from './payments.controller';
 import { PaymentsService } from './payments.service';
 import { Payment } from './entity/payment.entity';
 import { OrdersModule } from '../orders/orders.module';
+import { Product } from '../products/entities/product.entity';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { OrdersModule } from '../orders/orders.module';
       timeout: 10000,
       maxRedirects: 5,
     }),
-    TypeOrmModule.forFeature([Payment]),
+    TypeOrmModule.forFeature([Payment, Product]),
     forwardRef(() => OrdersModule),
   ],
   controllers: [PaymentsController],

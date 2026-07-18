@@ -15,8 +15,15 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('returns the service identity', () => {
+      expect(appController.getHello()).toBe('Hello From Auth Service!');
+    });
+
+    it('reports a healthy service', () => {
+      expect(appController.getHealth()).toEqual({
+        status: 'ok',
+        service: 'auth-service',
+      });
     });
   });
 });
