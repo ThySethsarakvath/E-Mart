@@ -1,6 +1,14 @@
 import apiClient from '../service/api';
 import cartService from '../service/cart.js';      
 import wishlistService from '../service/wishlist.js';
+
+const clearTransientShoppingData = () => {
+  localStorage.removeItem('customer_info');
+  localStorage.removeItem('checkout_data');
+  localStorage.removeItem('cart_items_guest');
+  localStorage.removeItem('wishlist_items_guest');
+};
+
 export default {
   async register(userData) {
     try {
@@ -24,6 +32,9 @@ export default {
       });
 
       const { user, accessToken, refreshToken } = response.data;
+
+      // Never carry checkout or legacy guest data into another account.
+      clearTransientShoppingData();
 
       // Store tokens and user info
       localStorage.setItem('accessToken', accessToken);
@@ -53,6 +64,7 @@ export default {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      clearTransientShoppingData();
 
       cartService.reloadCart();
       wishlistService.reloadWishlist();

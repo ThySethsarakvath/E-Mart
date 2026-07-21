@@ -529,7 +529,7 @@ onUnmounted(() => {
 
 .indigo {
   background: #eef2ff;
-  color: #4f46e5;
+  color: #0d6efd;
 }
 
 .violet {

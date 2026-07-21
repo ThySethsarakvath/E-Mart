@@ -1,14 +1,9 @@
 import { reactive, computed } from 'vue';
+import { getAuthenticatedUser, requireAuthenticatedUser } from './auth-required-alert';
 
 const getStorageKey = () => {
-  const userStr = localStorage.getItem('user');
-  if (userStr) {
-    try {
-      const user = JSON.parse(userStr);
-      if (user && user.id) return `cart_items_${user.id}`;
-    } catch (e) { console.error("User parse error", e); }
-  }
-  return 'cart_items_guest';
+  const user = getAuthenticatedUser();
+  return user ? `cart_items_${user.id}` : null;
 };
 
 const state = reactive({
@@ -18,16 +13,28 @@ const state = reactive({
 
 const loadCart = () => {
   const key = getStorageKey();
+  if (!key) {
+    state.items = [];
+    return;
+  }
+
   const data = localStorage.getItem(key);
-  state.items = data ? JSON.parse(data) : [];
+  try {
+    state.items = data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.warn('Ignoring invalid saved cart data:', error);
+    state.items = [];
+  }
 };
 
 const save = () => {
   const key = getStorageKey();
+  if (!key) return;
   localStorage.setItem(key, JSON.stringify(state.items));
 };
 
-// Initial load
+// Remove data created by the previous guest-cart behavior.
+localStorage.removeItem('cart_items_guest');
 loadCart();
 
 export default {
@@ -40,6 +47,8 @@ export default {
   },
 
   addToCart(product) {
+    if (!requireAuthenticatedUser('cart')) return false;
+
     const existingItem = state.items.find(item => item.id === product.id);
     if (existingItem) {
       existingItem.quantity++;
@@ -56,6 +65,7 @@ export default {
     state.notification.message = `${product.name} Added!`;
     state.notification.show = true;
     setTimeout(() => { state.notification.show = false; }, 2000);
+    return true;
   },
 
   removeFromCart(id) {

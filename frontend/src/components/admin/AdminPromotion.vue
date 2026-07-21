@@ -3,13 +3,14 @@
     <!-- Page Header -->
     <div class="page-header">
       <div>
-        <h2 class="page-title">Promotion Management</h2>
+        <p class="section-kicker">Campaigns</p>
+        <h2 class="page-title">Promotional offers</h2>
         <p class="page-subtitle">Manage discount products and flash deals</p>
       </div>
       <div class="header-actions">
         <span class="badge">{{ promotions.length }} Total</span>
         <button @click="openCreateModal" class="btn-primary">
-          <span class="icon">+</span> Add Promotion
+          <AdminIcon name="plus" /> Add Promotion
         </button>
       </div>
     </div>
@@ -58,16 +59,16 @@
             </td>
             <td class="final-price">${{ promo.finalPrice }}</td>
             <td class="rating-cell">
-              <span class="star-icon">⭐</span>
+              <span class="star-icon"><AdminIcon name="star" /></span>
               {{ promo.rating || 0 }}
             </td>
             <td>
               <div class="actions">
                 <button @click="openEditModal(promo)" class="btn-action edit" title="Edit">
-                  ✏️
+                  <AdminIcon name="edit" />
                 </button>
                 <button @click="confirmDelete(promo)" class="btn-action delete" title="Delete">
-                  🗑️
+                  <AdminIcon name="trash" />
                 </button>
               </div>
             </td>
@@ -77,11 +78,11 @@
 
       <!-- Empty State -->
       <div v-if="promotions.length === 0" class="empty-state">
-        <div class="empty-icon">🎁</div>
+        <div class="empty-icon"><AdminIcon name="promotion" /></div>
         <p>No promotions found</p>
         <p class="empty-hint">Create your first promotion to attract customers with special deals</p>
         <button @click="openCreateModal" class="btn-primary">
-          <span class="icon">+</span> Create Promotion
+          <AdminIcon name="plus" /> Create Promotion
         </button>
       </div>
     </div>
@@ -91,7 +92,7 @@
       <div class="modal-content large" @click.stop>
         <div class="modal-header">
           <h3>{{ isEdit ? 'Edit Promotion' : 'Create New Promotion' }}</h3>
-          <button @click="closeModal" class="btn-close">✕</button>
+          <button @click="closeModal" class="btn-close" aria-label="Close modal"><AdminIcon name="close" /></button>
         </div>
 
         <form @submit.prevent="submitForm" class="modal-body">
@@ -102,12 +103,12 @@
               <div v-if="preview" class="image-preview">
                 <img :src="preview" alt="Preview" />
                 <button type="button" @click="removeImage" class="remove-image">
-                  ✕
+                  <AdminIcon name="close" />
                 </button>
               </div>
               <label v-else for="promo-image-input" class="upload-placeholder">
-                <div class="upload-icon">📸</div>
-                <span>Click to upload product image</span>
+                <div class="upload-icon"><AdminIcon name="upload" /></div>
+                <span>Click to upload image</span>
                 <span class="upload-hint">Recommended size: 800x800px (Max 5MB)</span>
               </label>
               <input
@@ -220,10 +221,12 @@
       <div class="modal-content modal-small" @click.stop>
         <div class="modal-header">
           <h3>Confirm Delete</h3>
-          <button @click="showDelete = false" class="btn-close">✕</button>
+          <button @click="showDelete = false" class="btn-close" aria-label="Close modal">
+            <AdminIcon name="close" />
+          </button>
         </div>
         <div class="modal-body text-center">
-          <div class="warning-icon">⚠️</div>
+          <div class="warning-icon"><AdminIcon name="alert" /></div>
           <p>Are you sure you want to delete this promotion?</p>
           <p class="delete-warning">This action cannot be undone.</p>
         </div>
@@ -242,9 +245,11 @@
 
 <script>
 import promotionService from '@/service/promotion.service';
+import AdminIcon from '@/components/admin/AdminIcon.vue';
 
 export default {
   name: 'AdminPromotion',
+  components: { AdminIcon },
   data() {
     return {
       promotions: [],

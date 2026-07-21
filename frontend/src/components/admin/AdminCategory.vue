@@ -3,7 +3,8 @@
     <!-- Page Header -->
     <div class="page-header">
       <div>
-        <h2 class="page-title">Category Management</h2>
+        <p class="section-kicker">Catalog structure</p>
+        <h2 class="page-title">Categories and collections</h2>
         <p class="page-subtitle">Organize your products with categories and subcategories</p>
       </div>
       <div class="header-actions">
@@ -15,10 +16,10 @@
     <!-- Tab Navigation -->
     <div class="tabs">
       <button :class="['tab', { active: activeTab === 'categories' }]" @click="activeTab = 'categories'">
-        <span class="tab-icon">🏷️</span> Categories
+        <AdminIcon name="tags" /> Categories
       </button>
       <button :class="['tab', { active: activeTab === 'subcategories' }]" @click="activeTab = 'subcategories'">
-        <span class="tab-icon">📑</span> Subcategories
+        <AdminIcon name="clipboard" /> Subcategories
       </button>
     </div>
 
@@ -27,7 +28,7 @@
       <div class="section-header">
         <h3 class="section-title">All Categories</h3>
         <button @click="openCreateCategoryModal" class="btn-primary">
-          <span class="icon">+</span> Add New Category
+          <AdminIcon name="plus" /> Add New Category
         </button>
       </div>
 
@@ -46,31 +47,31 @@
             </div>
             <p class="category-name">{{ category.name }}</p>
             <div class="category-stats-inline">
-              <span class="stat-badge">📦 {{ category.products?.length || 0 }}</span>
-              <span class="stat-badge">🏷️ {{ category.subCategories?.length || 0 }}</span>
+              <span class="stat-badge"><AdminIcon name="package" /> {{ category.products?.length || 0 }}</span>
+              <span class="stat-badge"><AdminIcon name="tags" /> {{ category.subCategories?.length || 0 }}</span>
             </div>
           </div>
 
           <div class="category-hover-actions">
             <button @click="viewCategoryDetails(category)" class="action-btn view-btn" title="View Details">
-              👁️
+              <AdminIcon name="eye" />
             </button>
             <button @click="openEditCategoryModal(category)" class="action-btn edit-btn" title="Edit">
-              ✏️
+              <AdminIcon name="edit" />
             </button>
             <button @click="confirmDeleteCategory(category)" class="action-btn delete-btn" title="Delete">
-              🗑️
+              <AdminIcon name="trash" />
             </button>
           </div>
         </div>
 
         <!-- Empty State -->
         <div v-if="categories.length === 0" class="empty-state">
-          <div class="empty-icon">🏷️</div>
+          <div class="empty-icon"><AdminIcon name="tags" /></div>
           <p>No categories found</p>
           <p class="empty-hint">Create your first category to get started</p>
           <button @click="openCreateCategoryModal" class="btn-primary">
-            <span class="icon">+</span> Create Category
+            <AdminIcon name="plus" /> Create Category
           </button>
         </div>
       </div>
@@ -81,7 +82,7 @@
       <div class="section-header">
         <h3 class="section-title">All Subcategories</h3>
         <button @click="openCreateSubcategoryModal" class="btn-primary">
-          <span class="icon">+</span> Add New Subcategory
+          <AdminIcon name="plus" /> Add New Subcategory
         </button>
       </div>
 
@@ -115,7 +116,7 @@
               </td>
               <td>
                 <button @click="confirmDeleteSubcategory(subcategory)" class="btn-action delete" title="Delete">
-                  🗑️
+                  <AdminIcon name="trash" />
                 </button>
               </td>
             </tr>
@@ -124,11 +125,11 @@
 
         <!-- Empty State -->
         <div v-if="subcategories.length === 0" class="empty-state">
-          <div class="empty-icon">📑</div>
+          <div class="empty-icon"><AdminIcon name="clipboard" /></div>
           <p>No subcategories found</p>
           <p class="empty-hint">Create your first subcategory to organize categories</p>
           <button @click="openCreateSubcategoryModal" class="btn-primary">
-            <span class="icon">+</span> Create Subcategory
+            <AdminIcon name="plus" /> Create Subcategory
           </button>
         </div>
       </div>
@@ -139,7 +140,9 @@
       <div class="modal-content large" @click.stop>
         <div class="modal-header">
           <h3>{{ isEditMode ? 'Edit Category' : 'Create New Category' }}</h3>
-          <button @click="closeCategoryModal" class="btn-close">✕</button>
+          <button @click="closeCategoryModal" class="btn-close" aria-label="Close modal">
+            <AdminIcon name="close" />
+          </button>
         </div>
 
         <form @submit.prevent="submitCategoryForm" class="modal-body">
@@ -150,12 +153,12 @@
               <div v-if="imagePreview" class="image-preview">
                 <img :src="imagePreview" alt="Preview" />
                 <button type="button" @click="removeImage" class="remove-image">
-                  ✕
+                  <AdminIcon name="close" />
                 </button>
               </div>
               <label v-else for="category-image-input" class="upload-placeholder">
-                <div class="upload-icon">📸</div>
-                <span>Click to upload category image</span>
+                <div class="upload-icon"><AdminIcon name="upload" /></div>
+                <span>Click to upload image</span>
                 <span class="upload-hint">Recommended size: 300x300px (Max 5MB)</span>
               </label>
               <input
@@ -208,7 +211,9 @@
       <div class="modal-content modal-small" @click.stop>
         <div class="modal-header">
           <h3>Create New Subcategory</h3>
-          <button @click="closeSubcategoryModal" class="btn-close">✕</button>
+          <button @click="closeSubcategoryModal" class="btn-close" aria-label="Close modal">
+            <AdminIcon name="close" />
+          </button>
         </div>
 
         <form @submit.prevent="submitSubcategoryForm" class="modal-body">
@@ -259,7 +264,9 @@
       <div class="modal-content modal-large" @click.stop>
         <div class="modal-header">
           <h3>Category Details: {{ selectedCategory?.name }}</h3>
-          <button @click="showDetailsModal = false" class="btn-close">✕</button>
+          <button @click="showDetailsModal = false" class="btn-close" aria-label="Close modal">
+            <AdminIcon name="close" />
+          </button>
         </div>
 
         <div class="modal-body details-body">
@@ -308,10 +315,12 @@
       <div class="modal-content modal-small" @click.stop>
         <div class="modal-header">
           <h3>Confirm Delete</h3>
-          <button @click="showDeleteModal = false" class="btn-close">✕</button>
+          <button @click="showDeleteModal = false" class="btn-close" aria-label="Close modal">
+            <AdminIcon name="close" />
+          </button>
         </div>
         <div class="modal-body text-center">
-          <div class="warning-icon">⚠️</div>
+          <div class="warning-icon"><AdminIcon name="alert" /></div>
           <p>Are you sure you want to delete this {{ deleteType }}?</p>
           <p class="delete-warning">This action cannot be undone.</p>
         </div>
@@ -330,9 +339,11 @@
 
 <script>
 import categoriesService from '@/service/categories.service';
+import AdminIcon from '@/components/admin/AdminIcon.vue';
 
 export default {
   name: 'AdminCategories',
+  components: { AdminIcon },
   data() {
     return {
       activeTab: 'categories',

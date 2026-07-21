@@ -37,8 +37,6 @@
 
 <script>
 import authService from '../auth/auth.service.js';
-import cartService from '../service/cart.js';
-import wishlistService from '../service/wishlist.js';
 
 export default {
   name: 'LoginView',
@@ -58,62 +56,8 @@ export default {
       this.loading = true;
 
       try {
-        
-        const response = await authService.login(this.form);
-        const userData = response.user;
+        await authService.login(this.form);
         const isAdmin = authService.isAdmin();
-
-        console.log('Login successful:', userData);
-
-        if (userData && userData.id) {
-          
-          const guestCartStr = localStorage.getItem('cart_items_guest');
-          const guestCartItems = guestCartStr ? JSON.parse(guestCartStr) : [];
-
-          if (guestCartItems.length > 0) {
-            const userCartKey = `cart_items_${userData.id}`;
-            const userCartStr = localStorage.getItem(userCartKey);
-            let userCartItems = userCartStr ? JSON.parse(userCartStr) : [];
-
-            
-            guestCartItems.forEach(guestItem => {
-              const existing = userCartItems.find(u => u.id === guestItem.id);
-              if (existing) {
-                existing.quantity += guestItem.quantity;
-              } else {
-                userCartItems.push(guestItem);
-              }
-            });
-
-            localStorage.setItem(userCartKey, JSON.stringify(userCartItems));
-            localStorage.removeItem('cart_items_guest');
-          }
-
-          
-          const guestWishStr = localStorage.getItem('wishlist_items_guest');
-          const guestWishItems = guestWishStr ? JSON.parse(guestWishStr) : [];
-
-          if (guestWishItems.length > 0) {
-            const userWishKey = `wishlist_items_${userData.id}`;
-            const userWishStr = localStorage.getItem(userWishKey);
-            let userWishItems = userWishStr ? JSON.parse(userWishStr) : [];
-
-           
-            guestWishItems.forEach(guestItem => {
-              const exists = userWishItems.some(u => u.id === guestItem.id);
-              if (!exists) {
-                userWishItems.push(guestItem);
-              }
-            });
-
-            localStorage.setItem(userWishKey, JSON.stringify(userWishItems));
-            localStorage.removeItem('wishlist_items_guest');
-          }
-        }
-
-        
-        cartService.reloadCart();
-        wishlistService.reloadWishlist();
 
         
         if (isAdmin) {

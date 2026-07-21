@@ -2,20 +2,21 @@
   <div class="admin-products">
     <div class="page-header">
       <div>
-        <h2 class="page-title">Product Management</h2>
+        <p class="section-kicker">Catalog</p>
+        <h2 class="page-title">Product catalog</h2>
         <p class="page-subtitle">Manage your product catalog and inventory</p>
       </div>
       <div class="header-actions">
         <span class="badge">{{ products.length }} Total</span>
         <button @click="openModal()" class="btn-primary">
-          <span class="icon">+</span> Add New Product
+          <AdminIcon name="plus" /> Add New Product
         </button>
       </div>
     </div>
 
-    <div class="search-section">
+    <div class="toolbar search-section">
       <div class="search-box">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon"><AdminIcon name="search" /></span>
         <input v-model="searchQuery" type="text" placeholder="Search products by name..." class="search-input" />
       </div>
     </div>
@@ -55,17 +56,17 @@
             <td class="price-cell">${{ product.price }}</td>
             <td class="rating-cell">
               <div>
-                <span class="star-icon">⭐</span>
+                <span class="star-icon"><AdminIcon name="star" /></span>
                 {{ product.rating || 0 }}
               </div>
             </td>
             <td>
               <div class="actions">
                 <button @click="openModal(product)" class="btn-action edit" title="Edit">
-                  ✏️
+                  <AdminIcon name="edit" />
                 </button>
                 <button @click="confirmDelete(product.id)" class="btn-action delete" title="Delete">
-                  🗑️
+                  <AdminIcon name="trash" />
                 </button>
               </div>
             </td>
@@ -74,7 +75,7 @@
       </table>
 
       <div v-if="filteredProducts.length === 0" class="empty-state">
-        <div class="empty-icon">📦</div>
+        <div class="empty-icon"><AdminIcon name="package" /></div>
         <p>No products found</p>
         <p class="empty-hint">{{ searchQuery ? 'Try adjusting your search' : 'Add your first product to get started' }}
         </p>
@@ -86,7 +87,7 @@
       <div class="modal-content large" @click.stop>
         <div class="modal-header">
           <h3>{{ isEditing ? 'Edit Product' : 'Create New Product' }}</h3>
-          <button @click="closeModal" class="btn-close">✕</button>
+          <button @click="closeModal" class="btn-close" aria-label="Close modal"><AdminIcon name="close" /></button>
         </div>
 
         <form @submit.prevent="handleSubmit" class="modal-body">
@@ -97,12 +98,12 @@
               <div v-if="imagePreview" class="image-preview">
                 <img :src="imagePreview" alt="Preview" />
                 <button type="button" @click="removeImage" class="remove-image">
-                  ✕
+                  <AdminIcon name="close" />
                 </button>
               </div>
               <label v-else for="product-image-input" class="upload-placeholder">
-                <div class="upload-icon">📸</div>
-                <span>Click to upload product image</span>
+                <div class="upload-icon"><AdminIcon name="upload" /></div>
+                <span>Click to upload image</span>
                 <span class="upload-hint">Recommended size: 800x800px (Max 5MB)</span>
               </label>
               <input id="product-image-input" type="file" accept="image/*" @change="handleFileUpload"
@@ -170,10 +171,12 @@
       <div class="modal-content modal-small" @click.stop>
         <div class="modal-header">
           <h3>Confirm Delete</h3>
-          <button @click="showDeleteModal = false" class="btn-close">✕</button>
+          <button @click="showDeleteModal = false" class="btn-close" aria-label="Close modal">
+            <AdminIcon name="close" />
+          </button>
         </div>
         <div class="modal-body text-center">
-          <div class="warning-icon">⚠️</div>
+          <div class="warning-icon"><AdminIcon name="alert" /></div>
           <p>Are you sure you want to delete this product?</p>
           <p class="delete-warning">This action cannot be undone.</p>
         </div>
@@ -190,9 +193,11 @@
 
 <script>
 import productService from '@/service/product.service';
+import AdminIcon from '@/components/admin/AdminIcon.vue';
 
 export default {
   name: 'AdminProduct',
+  components: { AdminIcon },
   data() {
     return {
       products: [],

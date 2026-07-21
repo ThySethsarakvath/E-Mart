@@ -2,16 +2,23 @@
   <div class="admin-users">
     <div class="page-header">
       <div>
-        <h2 class="page-title">User Management</h2>
+        <p class="section-kicker">Customer access</p>
+        <h2 class="page-title">Customer accounts</h2>
         <p class="page-subtitle">Manage registered customers and staff roles</p>
+      </div>
+      <div v-if="!loading" class="header-actions">
+        <span class="badge">{{ users.length }} Accounts</span>
       </div>
     </div>
 
     <div class="toolbar">
       <div class="search-box">
+        <span class="search-icon"><AdminIcon name="search" /></span>
         <input v-model="searchQuery" type="text" placeholder="Search by email or name..." class="search-input" />
       </div>
-      <button @click="fetchUsers" class="btn-refresh" :disabled="loading">🔄 Refresh</button>
+      <button @click="fetchUsers" class="btn-refresh" :disabled="loading">
+        <AdminIcon name="refresh" :class="{ spinning: loading }" /> Refresh
+      </button>
     </div>
 
     <div class="table-container shadow-sm">
@@ -37,7 +44,12 @@
                 <div>
                   <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
                   <div class="role-container">
-                    <span v-for="ur in user.userRoles" :key="ur.id" class="role-badge">
+                    <span
+                      v-for="ur in user.userRoles"
+                      :key="ur.id"
+                      class="role-badge"
+                      :class="{ admin: ur.role?.name === 'ADMIN' }"
+                    >
                       {{ ur.role?.name }}
                     </span>
                   </div>
@@ -54,14 +66,43 @@
             <td>
               <div class="actions">
                 <button @click="toggleStatus(user)" :title="user.isActive ? 'Suspend' : 'Activate'" class="btn-icon">
-                  {{ user.isActive ? '🚫' : '✅' }}
+                  <AdminIcon :name="user.isActive ? 'ban' : 'check'" />
                 </button>
-                <button @click="confirmDelete(user)" title="Delete" class="btn-icon delete">🗑️</button>
+                <button @click="confirmDelete(user)" title="Delete" class="btn-icon delete">
+                  <AdminIcon name="trash" />
+                </button>
               </div>
             </td>
           </tr>
         </tbody>
       </table>
+      <div v-if="!loading && filteredUsers.length === 0" class="empty-state">
+        <div class="empty-icon"><AdminIcon name="users" /></div>
+        <p>No accounts match your search</p>
+        <p class="empty-hint">Try a different customer name or email address.</p>
+      </div>
+    </div>
+
+    <div v-if="userToDelete" class="modal-overlay" @click="closeDeleteModal">
+      <div class="modal-content modal-small" @click.stop>
+        <div class="modal-header">
+          <h3>Delete user account</h3>
+          <button class="btn-close" aria-label="Close delete dialog" @click="closeDeleteModal">
+            <AdminIcon name="close" />
+          </button>
+        </div>
+        <div class="modal-body text-center">
+          <div class="warning-icon"><AdminIcon name="alert" /></div>
+          <p>Delete {{ userToDelete.email }}?</p>
+          <p class="delete-warning">This permanently removes the account and cannot be undone.</p>
+          <div class="modal-actions">
+            <button class="btn-text" type="button" @click="closeDeleteModal">Cancel</button>
+            <button class="btn-danger" type="button" :disabled="deleting" @click="deleteUser">
+              {{ deleting ? 'Deleting...' : 'Delete account' }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -69,10 +110,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import userService from '@/service/user.service';
+import AdminIcon from '@/components/admin/AdminIcon.vue';
 
 const users = ref([]);
 const loading = ref(false);
 const searchQuery = ref('');
+const userToDelete = ref(null);
+const deleting = ref(false);
 
 const fetchUsers = async () => {
   loading.value = true;
@@ -94,14 +138,27 @@ const toggleStatus = async (user) => {
   }
 };
 
-const confirmDelete = async (user) => {
-  if (confirm(`Are you sure you want to delete ${user.email}?`)) {
-    try {
-      await userService.deleteUser(user.id);
-      await fetchUsers();
-    } catch {
-      alert("Error deleting user");
-    }
+const confirmDelete = (user) => {
+  userToDelete.value = user;
+};
+
+const closeDeleteModal = () => {
+  if (deleting.value) return;
+  userToDelete.value = null;
+};
+
+const deleteUser = async () => {
+  if (!userToDelete.value) return;
+
+  deleting.value = true;
+  try {
+    await userService.deleteUser(userToDelete.value.id);
+    userToDelete.value = null;
+    await fetchUsers();
+  } catch {
+    alert('Error deleting user');
+  } finally {
+    deleting.value = false;
   }
 };
 
@@ -179,7 +236,7 @@ onMounted(fetchUsers);
 .avatar {
   width: 35px;
   height: 35px;
-  background: #0990ff;
+  background: #0d6efd;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -200,7 +257,7 @@ onMounted(fetchUsers);
   border: 1px solid #e2e8f0;
 }
 /* Style for Admin specifically */
-.role-badge:contains('ADMIN') {
+.role-badge.admin {
   background: #eef2ff;
   color: #4338ca;
   border-color: #c7d2fe;
@@ -253,7 +310,7 @@ onMounted(fetchUsers);
 
 .loader {
   border: 3px solid #f3f3f3;
-  border-top: 3px solid #0990ff;
+  border-top: 3px solid #0d6efd;
   border-radius: 50%;
   width: 30px;
   height: 30px;

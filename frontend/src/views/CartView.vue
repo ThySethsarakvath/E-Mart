@@ -2,6 +2,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import cartService from '@/service/cart';
+import userService from '@/service/user.service';
+import authService from '@/auth/auth.service';
 
 const router = useRouter();
 
@@ -63,11 +65,52 @@ const getImgUrl = (path) => {
   return path || 'https://via.placeholder.com/150';
 };
 
+const getSavedCustomerInfo = () => {
+  try {
+    return JSON.parse(localStorage.getItem('customer_info')) || {};
+  } catch (error) {
+    console.warn('Ignoring invalid saved customer information:', error);
+    return {};
+  }
+};
+
 // --- Lifecycle ---
-onMounted(() => {
-  const savedCustomer = localStorage.getItem('customer_info');
-  if (savedCustomer) {
-    customerInfo.value = JSON.parse(savedCustomer);
+onMounted(async () => {
+  const savedCustomer = getSavedCustomerInfo();
+  const isAuthenticated = authService.isAuthenticated();
+
+  // Preserve the existing manual-entry fallback for guests or unavailable profiles.
+  customerInfo.value = {
+    firstName: savedCustomer.firstName || '',
+    lastName: savedCustomer.lastName || '',
+    email: savedCustomer.email || '',
+    phone: isAuthenticated ? '' : savedCustomer.phone || '',
+  };
+
+  if (!isAuthenticated) return;
+
+  try {
+    const response = await userService.getMyProfile();
+    const profile = response?.user || response;
+
+    customerInfo.value = {
+      firstName: profile?.firstName || customerInfo.value.firstName,
+      lastName: profile?.lastName || customerInfo.value.lastName,
+      email: profile?.email || customerInfo.value.email,
+      // Phone is intentionally manual because it is not part of the user profile schema.
+      phone: '',
+    };
+  } catch (error) {
+    // The locally stored authenticated user still provides useful defaults offline.
+    const currentUser = authService.getCurrentUser();
+    customerInfo.value = {
+      firstName: currentUser?.firstName || customerInfo.value.firstName,
+      lastName: currentUser?.lastName || customerInfo.value.lastName,
+      email: currentUser?.email || customerInfo.value.email,
+      phone: '',
+    };
+
+    console.warn('Using locally saved account details for checkout:', error);
   }
 });
 </script>
@@ -80,16 +123,34 @@ onMounted(() => {
 
     <div v-if="cartItems.length === 0" class="empty-cart-card">
       <div class="empty-content">
-        <div class="icon-circle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#bdc3c7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="9" cy="21" r="1"></circle>
             <circle cx="20" cy="21" r="1"></circle>
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
           </svg>
         </div>
-        <h2>Your Cart is Empty</h2>
-        <p>Before proceed to checkout you must add some products to your shopping cart.</p>
-        <router-link to="/" class="btn-primary-blue">RETURN TO SHOP</router-link>
+        <span class="empty-label">Your shopping journey starts here</span>
+        <h2>Your cart is empty</h2>
+        <p>Add products you love and come back here when you are ready to check out.</p>
+        <div class="empty-actions">
+          <router-link to="/products" class="btn-primary-blue">Explore products</router-link>
+          <router-link to="/wishlist" class="btn-secondary-empty">View wishlist</router-link>
+        </div>
+        <div class="empty-benefits">
+          <span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M12 3v18"></path></svg>
+            Easy checkout
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+            Secure payment
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7zM6 19h.01M18 19h.01"></path></svg>
+            Fast delivery
+          </span>
+        </div>
       </div>
     </div>
 
@@ -144,10 +205,10 @@ onMounted(() => {
           <h3>Order Summary</h3>
 
           <div class="customer-info-form">
-            <input v-model="customerInfo.firstName" type="text" placeholder="First Name" class="form-input" />
-            <input v-model="customerInfo.lastName" type="text" placeholder="Last Name" class="form-input" />
-            <input v-model="customerInfo.email" type="email" placeholder="Email Address" class="form-input" />
-            <input v-model="customerInfo.phone" type="tel" placeholder="Phone Number" class="form-input" />
+            <input v-model="customerInfo.firstName" type="text" placeholder="First Name" autocomplete="given-name" class="form-input" required />
+            <input v-model="customerInfo.lastName" type="text" placeholder="Last Name" autocomplete="family-name" class="form-input" required />
+            <input v-model="customerInfo.email" type="email" placeholder="Email Address" autocomplete="email" class="form-input" required />
+            <input v-model="customerInfo.phone" type="tel" placeholder="Phone Number" autocomplete="tel" class="form-input" required />
           </div>
 
           <hr />
@@ -252,8 +313,52 @@ hr { border: 0; border-top: 1px solid #eee; margin: 15px 0; }
 .checkout-btn:disabled { background: #cbd5e0; cursor: not-allowed; }
 
 /* --- Shared / Global UI --- */
-.empty-cart-card { background: white; padding: 80px 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-.btn-primary-blue { background: #0d6efd; color: white; padding: 16px 40px; text-decoration: none; border-radius: 4px; font-weight: 600; display: inline-block; }
+.empty-cart-card {
+  position: relative;
+  overflow: hidden;
+  padding: 72px 20px 34px;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #fff 0%, #f4f8ff 100%);
+  box-shadow: 0 16px 45px rgba(15, 23, 42, 0.07);
+  text-align: center;
+}
+.empty-content { max-width: 690px; margin: 0 auto; }
+.empty-icon {
+  display: grid; width: 112px; height: 112px; margin: 0 auto 24px; place-items: center;
+  border-radius: 32px; background: #eaf2ff; transform: rotate(4deg);
+}
+.empty-icon svg {
+  width: 50px; height: 50px; fill: none; stroke: #0d6efd; stroke-width: 1.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.empty-label {
+  display: inline-block; margin-bottom: 8px; color: #0d6efd; font-size: 12px;
+  font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
+}
+.empty-content h2 { margin: 0 0 10px; color: #172033; font-size: 30px; }
+.empty-content > p { max-width: 490px; margin: 0 auto; color: #64748b; line-height: 1.7; }
+.empty-actions { display: flex; justify-content: center; gap: 12px; margin-top: 28px; }
+.btn-primary-blue {
+  display: inline-block; padding: 14px 24px; border-radius: 10px; background: #0d6efd;
+  box-shadow: 0 9px 20px rgba(13,110,253,0.2); color: white; font-weight: 700; text-decoration: none;
+}
+.btn-secondary-empty {
+  display: inline-block; padding: 13px 24px; border: 1px solid #cbd5e1; border-radius: 10px;
+  background: #fff; color: #334155; font-weight: 700; text-decoration: none;
+}
+.empty-benefits {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 48px;
+  padding-top: 24px; border-top: 1px solid #e2e8f0;
+}
+.empty-benefits span {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  color: #64748b; font-size: 13px; font-weight: 600;
+}
+.empty-benefits svg {
+  width: 17px; height: 17px; fill: none; stroke: #0d6efd; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
 .btn-return-shop { display: inline-block; background: white; border: 1px solid #ddd; padding: 12px 25px; border-radius: 4px; color: #333; text-decoration: none; font-weight: 600; }
 
 /* --- Responsive --- */
@@ -270,5 +375,8 @@ hr { border: 0; border-top: 1px solid #eee; margin: 15px 0; }
   .col-price::before { content: "Price"; }
   .col-qty::before { content: "Quantity"; }
   .col-subtotal::before { content: "Subtotal"; }
+  .empty-cart-card { padding: 52px 18px 24px; }
+  .empty-actions { align-items: stretch; flex-direction: column; }
+  .empty-benefits { grid-template-columns: 1fr; margin-top: 34px; }
 }
 </style>

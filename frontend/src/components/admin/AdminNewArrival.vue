@@ -3,13 +3,14 @@
     <!-- Page Header -->
     <div class="page-header">
       <div>
-        <h2 class="page-title">New Arrivals Management</h2>
+        <p class="section-kicker">Merchandising</p>
+        <h2 class="page-title">Latest collections</h2>
         <p class="page-subtitle">Showcase your latest products and new collections</p>
       </div>
       <div class="header-actions">
         <span class="badge">{{ arrivals.length }} Total</span>
         <button @click="openCreateModal" class="btn-primary">
-          <span class="icon">+</span> Add New Arrival
+          <AdminIcon name="plus" /> Add New Arrival
         </button>
       </div>
     </div>
@@ -32,28 +33,28 @@
           <p class="arrival-subtitle">{{ arrival.subtitle }}</p>
           <div class="arrival-link-section">
             <a v-if="arrival.link" :href="arrival.link" target="_blank" class="arrival-link">
-              🔗 View Product
+              <AdminIcon name="link" /> View Product
             </a>
             <span v-else class="no-link">No link provided</span>
           </div>
         </div>
         <div class="arrival-actions">
           <button @click="openEditModal(arrival)" class="btn-action edit" title="Edit">
-            ✏️
+            <AdminIcon name="edit" />
           </button>
           <button @click="confirmDelete(arrival)" class="btn-action delete" title="Delete">
-            🗑️
+            <AdminIcon name="trash" />
           </button>
         </div>
       </div>
 
       <!-- Empty State -->
       <div v-if="arrivals.length === 0" class="empty-state">
-        <div class="empty-icon">✨</div>
+        <div class="empty-icon"><AdminIcon name="sparkles" /></div>
         <p>No new arrivals found</p>
         <p class="empty-hint">Add your first new arrival to showcase latest products</p>
         <button @click="openCreateModal" class="btn-primary">
-          <span class="icon">+</span> Create New Arrival
+          <AdminIcon name="plus" /> Create New Arrival
         </button>
       </div>
     </div>
@@ -63,7 +64,7 @@
       <div class="modal-content large" @click.stop>
         <div class="modal-header">
           <h3>{{ isEditMode ? 'Edit New Arrival' : 'Create New Arrival' }}</h3>
-          <button @click="closeModal" class="btn-close">✕</button>
+          <button @click="closeModal" class="btn-close" aria-label="Close modal"><AdminIcon name="close" /></button>
         </div>
 
         <form @submit.prevent="submitForm" class="modal-body">
@@ -74,12 +75,12 @@
               <div v-if="imagePreview" class="image-preview">
                 <img :src="imagePreview" alt="Preview" />
                 <button type="button" @click="removeImage" class="remove-image">
-                  ✕
+                  <AdminIcon name="close" />
                 </button>
               </div>
               <label v-else for="arrival-image-input" class="upload-placeholder">
-                <div class="upload-icon">📸</div>
-                <span>Click to upload product image</span>
+                <div class="upload-icon"><AdminIcon name="upload" /></div>
+                <span>Click to upload image</span>
                 <span class="upload-hint">Recommended size: 500x500px (Max 5MB)</span>
               </label>
               <input id="arrival-image-input" type="file" accept="image/*" @change="handleFileChange"
@@ -134,10 +135,12 @@
       <div class="modal-content modal-small" @click.stop>
         <div class="modal-header">
           <h3>Confirm Delete</h3>
-          <button @click="showDeleteModal = false" class="btn-close">✕</button>
+          <button @click="showDeleteModal = false" class="btn-close" aria-label="Close modal">
+            <AdminIcon name="close" />
+          </button>
         </div>
         <div class="modal-body text-center">
-          <div class="warning-icon">⚠️</div>
+          <div class="warning-icon"><AdminIcon name="alert" /></div>
           <p>Are you sure you want to delete this arrival?</p>
           <p class="delete-warning">This action cannot be undone.</p>
         </div>
@@ -156,9 +159,11 @@
 
 <script>
 import arrivalsService from '@/service/arrivals.service';
+import AdminIcon from '@/components/admin/AdminIcon.vue';
 
 export default {
   name: 'AdminArrivals',
+  components: { AdminIcon },
   data() {
     return {
       arrivals: [],

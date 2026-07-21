@@ -2,13 +2,14 @@
   <div class="admin-banners">
     <div class="page-header">
       <div>
-        <h2 class="page-title">Banner Management</h2>
+        <p class="section-kicker">Storefront content</p>
+        <h2 class="page-title">Homepage banners</h2>
         <p class="page-subtitle">Manage homepage carousel and promotional banners</p>
       </div>
       <div class="header-actions">
         <span class="badge">{{ banners.length }} Total</span>
         <button @click="openCreateModal" class="btn-primary">
-          <span class="icon">+</span> Add New Banner
+          <AdminIcon name="plus" /> Add New Banner
         </button>
       </div>
     </div>
@@ -34,17 +35,17 @@
 
           <div class="card-actions">
             <button @click="openEditModal(banner)" class="btn-icon-card edit" title="Edit">
-              ✏️ Edit
+              <AdminIcon name="edit" /> Edit
             </button>
             <button @click="confirmDelete(banner)" class="btn-icon-card delete" title="Delete">
-              🗑️ Delete
+              <AdminIcon name="trash" /> Delete
             </button>
           </div>
         </div>
       </div>
 
       <div v-if="banners.length === 0" class="empty-state">
-        <div class="empty-icon">🖼️</div>
+        <div class="empty-icon"><AdminIcon name="image" /></div>
         <p>No banners found. Create your first banner!</p>
       </div>
     </div>
@@ -53,7 +54,7 @@
       <div class="modal-content large" @click.stop>
         <div class="modal-header">
           <h3>{{ isEditMode ? 'Edit Banner' : 'Create New Banner' }}</h3>
-          <button @click="closeModal" class="btn-close">✕</button>
+          <button @click="closeModal" class="btn-close" aria-label="Close modal"><AdminIcon name="close" /></button>
         </div>
 
         <form @submit.prevent="submitForm" class="modal-body">
@@ -63,12 +64,12 @@
               <div v-if="imagePreview" class="image-preview">
                 <img :src="imagePreview" alt="Preview" />
                 <button type="button" @click="removeImage" class="remove-image">
-                  ✕
+                  <AdminIcon name="close" />
                 </button>
               </div>
               <label v-else for="banner-input" class="upload-placeholder">
-                <div class="upload-icon">📸</div>
-                <span>Click to upload banner image</span>
+                <div class="upload-icon"><AdminIcon name="upload" /></div>
+                <span>Click to upload image</span>
                 <span class="upload-hint">Recommended size: 1920x600px (Max 5MB)</span>
               </label>
               <input id="banner-input" type="file" accept="image/*" @change="handleFileChange" style="display: none"
@@ -105,10 +106,12 @@
       <div class="modal-content modal-small" @click.stop>
         <div class="modal-header">
           <h3>Confirm Delete</h3>
-          <button @click="showDeleteModal = false" class="btn-close">✕</button>
+          <button @click="showDeleteModal = false" class="btn-close" aria-label="Close modal">
+            <AdminIcon name="close" />
+          </button>
         </div>
         <div class="modal-body text-center">
-          <div class="warning-icon">⚠️</div>
+          <div class="warning-icon"><AdminIcon name="alert" /></div>
           <p>Are you sure you want to delete this banner?</p>
           <p class="delete-warning">This action cannot be undone.</p>
         </div>
@@ -125,9 +128,11 @@
 
 <script>
 import bannerService from '@/service/banner.service';
+import AdminIcon from '@/components/admin/AdminIcon.vue';
 
 export default {
   name: 'AdminBanners',
+  components: { AdminIcon },
   data() {
     return {
       banners: [],

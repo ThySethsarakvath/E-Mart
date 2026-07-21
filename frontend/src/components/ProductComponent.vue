@@ -48,14 +48,14 @@ const goToDetails = () => {
 
 const toggleWishlist = () => {
   const wasInList = wishlistService.isInWishlist(props.product.id)
-  wishlistService.toggleWishlist(props.product)
-  if (!wasInList) showWishlistModal.value = true
+  const result = wishlistService.toggleWishlist(props.product)
+  if (result === true && !wasInList) showWishlistModal.value = true
 }
 
 
 const handleAddToCart = () => {
-  cartService.addToCart(props.product)
-  showCartModal.value = true
+  const added = cartService.addToCart(props.product)
+  if (added) showCartModal.value = true
 }
 
 const goToCart = () => {

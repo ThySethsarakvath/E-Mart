@@ -89,6 +89,7 @@
 <script>
 import authService from '@/auth/auth.service'
 import AdminIcon from '@/components/admin/AdminIcon.vue'
+import '@/assets/admin-system.css'
 
 export default {
   name: 'AdminLayout',

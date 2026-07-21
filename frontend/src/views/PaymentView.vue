@@ -101,114 +101,102 @@
         <p class="subtitle">Scan the QR code with ABA Mobile or any KHQR app</p>
       </div>
 
-      <div class="order-summary">
-        <h3>Order Summary</h3>
-        <div class="order-items" v-if="orderItems && orderItems.length > 0">
-          <div v-for="item in orderItems" :key="item.id" class="order-item">
-            <span class="item-name">{{ item.name }} × {{ item.quantity }}</span>
-            <span class="item-price">${{ (item.price * item.quantity).toFixed(2) }}</span>
+      <div class="payment-layout">
+        <div class="summary-column">
+          <div class="order-summary">
+            <div class="summary-heading">
+              <span class="summary-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m3 7 9 5 9-5M12 12v9"></path>
+                  <path d="m5 5 7-3 7 3 2 2v10l-9 5-9-5V7l2-2Z"></path>
+                </svg>
+              </span>
+              <div>
+                <span>Purchase details</span>
+                <h3>Order Summary</h3>
+              </div>
+            </div>
+            <div class="order-items" v-if="orderItems && orderItems.length > 0">
+              <div v-for="item in orderItems" :key="item.id" class="order-item">
+                <span class="item-name">{{ item.name }} × {{ item.quantity }}</span>
+                <span class="item-price">${{ (item.price * item.quantity).toFixed(2) }}</span>
+              </div>
+            </div>
+            <div class="order-total">
+              <span class="total-label">Total Amount</span>
+              <span class="total-amount">${{ amount.toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <div class="app-download" v-if="qrData.appStore || qrData.playStore">
+            <p>Get the ABA Mobile app</p>
+            <div class="app-links">
+              <a v-if="qrData.appStore" :href="qrData.appStore" target="_blank" rel="noopener noreferrer" class="app-link">
+                <img src="https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg" alt="Download on App Store" />
+              </a>
+              <a v-if="qrData.playStore" :href="qrData.playStore" target="_blank" rel="noopener noreferrer" class="app-link">
+                <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" />
+              </a>
+            </div>
           </div>
         </div>
-        <div class="order-total">
-          <span class="total-label">Total Amount:</span>
-          <span class="total-amount">${{ amount.toFixed(2) }}</span>
-        </div>
-      </div>
 
-      <!-- QR Code -->
-      <div class="qr-code-wrapper">
-        <div class="qr-code-box">
-          <!-- Display QR using the base64 image from ABA Payway -->
-          <img
-            v-if="qrData.qrImage"
-            :src="qrData.qrImage"
-            alt="Payment QR Code"
-            class="qr-image"
-          />
-          <!-- Fallback: Generate QR from qrString if image not available -->
-          <canvas
-            v-else
-            ref="qrCanvas"
-            class="qr-canvas"
-          ></canvas>
-        </div>
-
-        <div class="qr-info">
-          <p class="info-text">
-            <span class="info-icon">📱</span>
-            Open your ABA Mobile app or any KHQR banking app
-          </p>
-          <p class="info-text">
-            <span class="info-icon">📸</span>
-            Scan the QR code above
-          </p>
-          <p class="info-text">
-            <span class="info-icon">✓</span>
-            Confirm the payment in your banking app
-          </p>
-        </div>
-
-        <!-- Timer -->
-        <div class="timer-container" v-if="timeRemaining > 0">
-          <div class="timer-bar">
-            <div class="timer-progress" :style="{ width: timerPercentage + '%' }"></div>
+        <div class="qr-code-wrapper">
+          <div class="qr-label">
+            <span class="live-dot"></span>
+            Secure KHQR payment
           </div>
-          <p class="timer-text">
-            QR code expires in <strong>{{ formatTime(timeRemaining) }}</strong>
-          </p>
+          <div class="qr-code-box">
+            <img
+              v-if="qrData.qrImage"
+              :src="qrData.qrImage"
+              alt="Payment QR Code"
+              class="qr-image"
+            />
+            <canvas
+              v-else
+              ref="qrCanvas"
+              class="qr-canvas"
+            ></canvas>
+          </div>
+
+          <div class="timer-container" v-if="timeRemaining > 0">
+            <div class="timer-row">
+              <span>QR expires in</span>
+              <strong>{{ formatTime(timeRemaining) }}</strong>
+            </div>
+            <div class="timer-bar">
+              <div class="timer-progress" :style="{ width: timerPercentage + '%' }"></div>
+            </div>
+          </div>
+          <div v-else class="expired-message">
+            <p>QR code has expired</p>
+            <button @click="regenerateQR" class="btn-primary">Generate New QR Code</button>
+          </div>
         </div>
-        <div v-else class="expired-message">
-          <p>⏰ QR code has expired</p>
-          <button @click="regenerateQR" class="btn-primary">Generate New QR Code</button>
+      </div>
+
+      <div class="payment-footer">
+        <div class="sandbox-simulation" v-if="paymentStatus === 'PENDING' && showSimulation">
+          <div class="sandbox-notice">
+            <span class="sandbox-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14.7 6.3a4 4 0 0 0-5-5l2.1 2.1-8.4 8.4-2.1-2.1a4 4 0 0 0 5 5l8.4-8.4Z"></path>
+                <path d="m13 11 8 8-2 2-8-8"></path>
+              </svg>
+            </span>
+            <p><strong>Sandbox mode</strong><span>Use simulation to complete this test payment.</span></p>
+          </div>
+          <button @click="simulateSuccessfulPayment" class="btn-simulate" :disabled="simulatingPayment">
+            {{ simulatingPayment ? 'Processing...' : 'Simulate successful payment' }}
+          </button>
         </div>
-      </div>
 
-      <!-- Mobile App Links -->
-      <div class="app-download" v-if="qrData.appStore || qrData.playStore">
-        <p>Don't have ABA Mobile?</p>
-        <div class="app-links">
-          <a v-if="qrData.appStore" :href="qrData.appStore" target="_blank" class="app-link">
-            <img src="https://developer.apple.com/app-store/marketing/guidelines/images/badge-download-on-the-app-store.svg" alt="Download on App Store" />
-          </a>
-          <a v-if="qrData.playStore" :href="qrData.playStore" target="_blank" class="app-link">
-            <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" />
-          </a>
+        <div class="actions">
+          <button @click="cancelPayment" class="btn-cancel">
+            Cancel payment
+          </button>
         </div>
-      </div>
-
-      <!-- Payment Status Checking -->
-      <div class="payment-checking" v-if="checkingPayment">
-        <div class="checking-spinner"></div>
-        <p>Checking payment status...</p>
-      </div>
-
-      <!-- Manual Status Check -->
-      <div class="manual-check" v-if="!checkingPayment && paymentStatus === 'PENDING'">
-        <button @click="checkPaymentStatus(true)" class="btn-outline">
-          Check Payment Status
-        </button>
-        <p class="help-text">
-          Already paid? Click to verify your payment.
-        </p>
-      </div>
-
-      <!-- Sandbox Simulation Button -->
-      <div class="sandbox-simulation" v-if="paymentStatus === 'PENDING' && showSimulation">
-        <div class="sandbox-notice">
-          <p>🔧 <strong>Sandbox Mode:</strong> QR codes cannot be scanned with ABA Mobile in sandbox.</p>
-          <p class="sandbox-hint">Use the button below to simulate a successful payment for testing.</p>
-        </div>
-        <button @click="simulateSuccessfulPayment" class="btn-simulate" :disabled="simulatingPayment">
-          <span v-if="!simulatingPayment">✅ Simulate Successful Payment</span>
-          <span v-else>Processing...</span>
-        </button>
-      </div>
-
-      <!-- Cancel Payment -->
-      <div class="actions">
-        <button @click="cancelPayment" class="btn-cancel">
-          Cancel Payment
-        </button>
       </div>
     </div>
   </div>
@@ -503,9 +491,9 @@ onUnmounted(() => {
 
 <style scoped>
 .payment-container {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
+  max-width: 1080px;
+  margin: 1rem auto;
+  padding: 1rem 1.25rem;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
@@ -519,7 +507,7 @@ onUnmounted(() => {
   width: 50px;
   height: 50px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #003d82;
+  border-top: 4px solid #0d6efd;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -584,56 +572,121 @@ onUnmounted(() => {
 /* QR Container */
 .qr-container {
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  padding: 1.25rem;
 }
 
 .payment-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .payment-header h2 {
-  color: #003d82;
-  margin-bottom: 0.5rem;
+  color: #0d6efd;
+  margin: 0 0 0.25rem;
+  font-size: 1.55rem;
 }
 
 .subtitle {
   color: #666;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 /* Order Summary */
-.order-summary {
-  background: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
+.payment-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 1rem;
+  align-items: stretch;
 }
 
-.order-summary h3 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: #333;
+.summary-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.order-summary {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 1.15rem;
+  border: 1px solid #e5ebf3;
+  border-radius: 14px;
+  background: #f8fafc;
+  margin: 0;
+}
+
+.summary-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.summary-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  border-radius: 11px;
+  background: #eaf2ff;
+  color: #0d6efd;
+}
+
+.summary-icon svg {
+  width: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.summary-heading span {
+  color: #94a3b8;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.summary-heading h3 {
+  margin: 0.1rem 0 0;
+  color: #1e293b;
+  font-size: 1rem;
 }
 
 .order-items {
-  margin-bottom: 1rem;
+  max-height: 190px;
+  margin-bottom: 0.75rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
 }
 
 .order-item {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 0;
+  gap: 1rem;
+  padding: 0.55rem 0;
   border-bottom: 1px solid #e0e0e0;
+  font-size: 0.82rem;
 }
 
 .item-name {
+  overflow: hidden;
   color: #555;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .item-price {
+  flex: 0 0 auto;
   font-weight: 600;
   color: #333;
 }
@@ -641,9 +694,11 @@ onUnmounted(() => {
 .order-total {
   display: flex;
   justify-content: space-between;
-  padding-top: 1rem;
-  border-top: 2px solid #003d82;
-  font-size: 1.2rem;
+  align-items: center;
+  margin-top: auto;
+  padding: 0.9rem 0.9rem 0;
+  border-top: 1px solid #dbe3ee;
+  font-size: 1rem;
   font-weight: 700;
 }
 
@@ -652,63 +707,93 @@ onUnmounted(() => {
 }
 
 .total-amount {
-  color: #003d82;
+  color: #0d6efd;
+  font-size: 1.45rem;
 }
 
 /* QR Code */
 .qr-code-wrapper {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #f8fbff, #eef5ff);
   text-align: center;
+}
+
+.qr-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.55rem;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.14);
 }
 
 .qr-code-box {
   background: #fff;
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 2px solid #e0e0e0;
+  width: min(100%, 320px);
+  padding: 0.75rem;
+  border-radius: 14px;
+  border: 1px solid #d7e2f0;
   display: inline-block;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.65rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.09);
 }
 
 .qr-image {
-  max-width: 300px;
+  width: 100%;
+  max-width: 294px;
   height: auto;
   display: block;
+  margin: 0 auto;
 }
 
 .qr-canvas {
+  width: min(100%, 294px) !important;
+  height: auto !important;
   display: block;
-}
-
-/* QR Info */
-.qr-info {
-  text-align: left;
-  max-width: 400px;
-  margin: 0 auto 2rem;
-}
-
-.info-text {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  margin-bottom: 0.5rem;
-  background: #f5f5f5;
-  border-radius: 8px;
-  color: #555;
-}
-
-.info-icon {
-  font-size: 1.5rem;
+  margin: 0 auto;
 }
 
 /* Timer */
 .timer-container {
-  max-width: 400px;
-  margin: 2rem auto;
+  width: min(100%, 320px);
+  margin: 0;
+}
+
+.timer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+  color: #64748b;
+  font-size: 0.72rem;
+}
+
+.timer-row strong {
+  color: #0d6efd;
+  font-size: 0.8rem;
 }
 
 .timer-bar {
-  height: 8px;
+  height: 5px;
   background: #e0e0e0;
   border-radius: 4px;
   overflow: hidden;
@@ -721,86 +806,62 @@ onUnmounted(() => {
   transition: width 1s linear;
 }
 
-.timer-text {
-  text-align: center;
-  color: #666;
-  font-size: 0.9rem;
-}
-
 .expired-message {
-  padding: 1.5rem;
+  width: 100%;
+  padding: 0.75rem;
   background: #fff3cd;
   border-radius: 8px;
-  margin: 2rem 0;
+  margin: 0;
 }
 
 .expired-message p {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   color: #856404;
+  font-size: 0.78rem;
 }
 
 /* App Download */
 .app-download {
-  text-align: center;
-  padding: 2rem 0;
-  border-top: 1px solid #e0e0e0;
-  margin-top: 2rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #e5ebf3;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
 }
 
 .app-download p {
-  margin-bottom: 1rem;
+  margin-bottom: 0.45rem;
   color: #666;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .app-links {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 .app-link img {
-  height: 50px;
+  height: 32px;
   width: auto;
 }
 
-/* Payment Checking */
-.payment-checking {
-  text-align: center;
-  padding: 1.5rem;
-  background: #e3f2fd;
-  border-radius: 8px;
-  margin: 1.5rem 0;
-}
-
-.checking-spinner {
-  width: 30px;
-  height: 30px;
-  border: 3px solid #bbdefb;
-  border-top: 3px solid #1976d2;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 0.5rem;
-}
-
-/* Manual Check */
-.manual-check {
-  text-align: center;
-  padding: 1.5rem 0;
-}
-
-.help-text {
-  color: #666;
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
-}
-
 /* Actions */
+.payment-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
 .actions {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
   text-align: center;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e0e0e0;
 }
 
 /* Buttons */
@@ -819,14 +880,14 @@ onUnmounted(() => {
 }
 
 .btn-primary {
-  background: #003d82;
+  background: #0d6efd;
   color: #fff;
 }
 
 .btn-primary:hover {
-  background: #002a5c;
+  background: #0b5ed7;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 61, 130, 0.3);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
 }
 
 .btn-secondary {
@@ -840,16 +901,18 @@ onUnmounted(() => {
 
 .btn-outline {
   background: transparent;
-  color: #003d82;
-  border: 2px solid #003d82;
+  color: #0d6efd;
+  border: 2px solid #0d6efd;
 }
 
 .btn-outline:hover {
-  background: #003d82;
+  background: #0d6efd;
   color: #fff;
 }
 
 .btn-cancel {
+  margin: 0;
+  padding: 0.65rem 1.1rem;
   background: transparent;
   color: #d32f2f;
   border: 1px solid #d32f2f;
@@ -862,40 +925,76 @@ onUnmounted(() => {
 
 /* Sandbox Simulation */
 .sandbox-simulation {
-  background: #fff3cd;
-  border: 2px dashed #856404;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin: 2rem 0;
-  text-align: center;
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #f0d98c;
+  border-radius: 11px;
+  background: #fffbeb;
+  margin: 0;
+  text-align: left;
 }
 
 .sandbox-notice {
-  margin-bottom: 1rem;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.sandbox-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 9px;
+  background: #fef3c7;
+  color: #9a6700;
+}
+
+.sandbox-icon svg {
+  width: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .sandbox-notice p {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
   color: #856404;
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
+  margin: 0;
+  font-size: 0.72rem;
 }
 
 .sandbox-notice strong {
   font-weight: 700;
 }
 
-.sandbox-hint {
-  font-size: 0.85rem;
+.sandbox-notice span {
+  overflow: hidden;
   opacity: 0.8;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .btn-simulate {
+  flex: 0 0 auto;
   background: #28a745;
   color: white;
-  padding: 0.875rem 2rem;
+  padding: 0.65rem 1rem;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -935,7 +1034,7 @@ onUnmounted(() => {
 
 .receipt-header h3 {
   margin: 0 0 0.5rem 0;
-  color: #003d82;
+  color: #0d6efd;
   font-size: 1.5rem;
 }
 
@@ -992,7 +1091,7 @@ onUnmounted(() => {
 }
 
 .receipt-row.total .value {
-  color: #003d82;
+  color: #0d6efd;
 }
 
 .success-badge {
@@ -1033,7 +1132,7 @@ onUnmounted(() => {
 }
 
 .item-price {
-  color: #003d82;
+  color: #0d6efd;
   font-weight: 600;
 }
 
@@ -1062,22 +1161,57 @@ onUnmounted(() => {
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-  .payment-container {
-    padding: 1rem;
+@media (max-width: 900px) {
+  .payment-layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
   }
 
   .qr-code-box {
+    width: min(100%, 292px);
+  }
+
+  .qr-image,
+  .qr-canvas {
+    max-width: 266px;
+  }
+}
+
+@media (max-width: 768px) {
+  .payment-container {
+    margin: 0.75rem auto;
+    padding: 0.75rem;
+  }
+
+  .qr-container {
     padding: 1rem;
   }
 
-  .qr-image {
-    max-width: 250px;
+  .payment-layout {
+    grid-template-columns: 1fr;
   }
 
-  .app-links {
+  .qr-code-box {
+    width: min(100%, 320px);
+    padding: 0.75rem;
+  }
+
+  .qr-image {
+    max-width: 294px;
+  }
+
+  .payment-footer,
+  .sandbox-simulation {
+    align-items: stretch;
     flex-direction: column;
-    align-items: center;
+  }
+
+  .sandbox-notice span {
+    white-space: normal;
+  }
+
+  .btn-simulate,
+  .btn-cancel {
+    width: 100%;
   }
 }
 </style>
